@@ -4,14 +4,14 @@ var Point2D = require('../utils/point.js').Point2D;
 var Vector2D = require('../utils/vector.js').Vector2D;
 
 
-var assert_vactor_values = function(vector,x1,y1,x2,y2,dx,dy,d) {
+var assert_vactor_values = function(vector,x1,y1,x2,y2,dx,dy,length) {
     assert.equal(vector.p1.x,x1);
     assert.equal(vector.p1.y,y1);
     assert.equal(vector.p2.x,x2);
     assert.equal(vector.p2.y,y2);
     assert.equal(vector.dx,dx);
     assert.equal(vector.dy,dy);
-    assert.equal(vector.d,d);
+    assert.equal(vector.length,length);
 
 }
 

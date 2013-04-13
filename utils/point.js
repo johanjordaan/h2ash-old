@@ -9,7 +9,6 @@ Point2D.prototype.translate = function(dx,dy) {
     this.set(this.x+dx, this.y+dy); 
 }
 
-
 if(typeof module != 'undefined') {
     module.exports.Point2D = Point2D;
 } else {
