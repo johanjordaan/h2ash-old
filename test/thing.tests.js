@@ -1,6 +1,7 @@
 var assert = require('assert')
 
 var Point2D = require('../utils/point.js').Point2D;
+var Vector2D = require('../utils/vector.js').Vector2D;
 var Thing = require('../models/thing.js').Thing;
 
 var assert_thing_values = function(thing,id,x,y,tx,ty,v,last_update) {
@@ -101,60 +102,44 @@ describe('Thing', function() {
             thing.update(t2);
             assert_thing_values(thing,null, 1,0, 10,0, 1, t2);
         })
-
+        it('should move the thing based on the target and the velocity - x axis negative',function() {
+            var t1 = new Date(2000,1,1,10,9,0,0);
+            var t2 = new Date(2000,1,1,10,9,1,0);
+            
+            var thing = new Thing(t1);
+            thing.set_target_and_velocity(new Point2D(-10,0),1,t1)
+            thing.update(t2);
+            assert_thing_values(thing,null, -1,0, -10,0, 1, t2);
+        })
+        it('should move the thing based on the target and the velocity - y axis positive',function() {
+            var t1 = new Date(2000,1,1,10,9,0,0);
+            var t2 = new Date(2000,1,1,10,9,1,0);
+            
+            var thing = new Thing(t1);
+            thing.set_target_and_velocity(new Point2D(0,10),1,t1)
+            thing.update(t2);
+            assert_thing_values(thing,null, 0,1, 0,10, 1, t2);
+        })
+        it('should move the thing based on the target and the velocity - y axis negative',function() {
+            var t1 = new Date(2000,1,1,10,9,0,0);
+            var t2 = new Date(2000,1,1,10,9,1,0);
+            
+            var thing = new Thing(t1);
+            thing.set_target_and_velocity(new Point2D(0,-10),1,t1)
+            thing.update(t2);
+            assert_thing_values(thing,null, 0,-1, 0,-10, 1, t2);
+        })
+        it('should move the thing based on the target and the velocity - x and y axis positive',function() {
+            var t1 = new Date(2000,1,1,10,9,0,0);
+            var t2 = new Date(2000,1,1,10,9,1,0);
+            
+            var thing = new Thing(t1);
+            thing.set_target_and_velocity(new Point2D(10,10),1,t1)
+            thing.update(t2);
+            
+            var v = new Vector2D(new Point2D(0,0),new Point2D(10,10)); 
+            assert_thing_values(thing,null, v.dx/v.length,v.dy/v.length   , 10,10, 1, t2);
+        })
     })
 
 })
-
-
-
-/*
-
-describe('#update_thing', function() {
-    
-    
-
-
-    it('should move the thing based on the target and the velocity - x axis negative',function() {
-        var t1 = new Date(2000,1,1,10,9,0,0);
-        var t2 = new Date(2000,1,1,10,9,1,0);
-        
-        var thing = new things.Thing(t1);
-        things.set_thing_target_position_and_velocity(thing,-10,0,1,t1)
-        things.update_thing(thing,t2);
-        assert_thing_values(thing,null, -1,0, -10,0, 1, t2);
-    })
-
-    it('should move the thing based on the target and the velocity - y axis positive',function() {
-        var t1 = new Date(2000,1,1,10,9,0,0);
-        var t2 = new Date(2000,1,1,10,9,1,0);
-        
-        var thing = new things.Thing(t1);
-        things.set_thing_target_position_and_velocity(thing,0,10,1,t1)
-        things.update_thing(thing,t2);
-        assert_thing_values(thing,null, 0,1, 0,10, 1, t2);
-    })
-
-    it('should move the thing based on the target and the velocity - y axis negative',function() {
-        var t1 = new Date(2000,1,1,10,9,0,0);
-        var t2 = new Date(2000,1,1,10,9,1,0);
-        
-        var thing = new things.Thing(t1);
-        things.set_thing_target_position_and_velocity(thing,0,-10,1,t1)
-        things.update_thing(thing,t2);
-        assert_thing_values(thing,null, 0,-1, 0,-10, 1, t2);
-    })
-
-    it('should move the thing based on the target and the velocity - x and y axis positive',function() {
-        var t1 = new Date(2000,1,1,10,9,0,0);
-        var t2 = new Date(2000,1,1,10,9,1,0);
-        
-        var thing = new things.Thing(t1);
-        things.set_thing_target_position_and_velocity(thing,10,10,1,t1)
-        things.update_thing(thing,t2);
-        
-        var d = vector.distance(0,0,10,10);
-        assert_thing_values(thing,null, d,d   , 10,10, 1, t2);
-    })
-})
-*/
