@@ -1,6 +1,8 @@
 var assert = require('assert')
 
+var vector = require('../utils/vector.js')
 var things = require('../models/thing.js')
+
 
 var assert_thing_values = function(thing,id,x,y,tx,ty,v,last_update) {
     assert.equal(thing.id,id)
@@ -87,7 +89,6 @@ describe('#set_thing_velocity', function() {
     })
 })
 
-
 describe('#update_thing', function() {
     it('should not update a stationary (v=0) thing',function() {
         var t = new Date();
@@ -115,14 +116,55 @@ describe('#update_thing', function() {
         assert_thing_values(thing,null, 100,100, 100,100, 0, t2);
     })
 
-    it('should move the thing based on the target and the velocity',function() {
+    it('should move the thing based on the target and the velocity - x axis positive',function() {
         var t1 = new Date(2000,1,1,10,9,0,0);
         var t2 = new Date(2000,1,1,10,9,1,0);
         
         var thing = new things.Thing(t1);
-        things.set_thing_target_position(thing,10,0,t1)
-        things.set_thing_velocity(thing,1,t1);
+        things.set_thing_target_position_and_velocity(thing,10,0,1,t1)
         things.update_thing(thing,t2);
         assert_thing_values(thing,null, 1,0, 10,0, 1, t2);
+    })
+
+    it('should move the thing based on the target and the velocity - x axis negative',function() {
+        var t1 = new Date(2000,1,1,10,9,0,0);
+        var t2 = new Date(2000,1,1,10,9,1,0);
+        
+        var thing = new things.Thing(t1);
+        things.set_thing_target_position_and_velocity(thing,-10,0,1,t1)
+        things.update_thing(thing,t2);
+        assert_thing_values(thing,null, -1,0, -10,0, 1, t2);
+    })
+
+    it('should move the thing based on the target and the velocity - y axis positive',function() {
+        var t1 = new Date(2000,1,1,10,9,0,0);
+        var t2 = new Date(2000,1,1,10,9,1,0);
+        
+        var thing = new things.Thing(t1);
+        things.set_thing_target_position_and_velocity(thing,0,10,1,t1)
+        things.update_thing(thing,t2);
+        assert_thing_values(thing,null, 0,1, 0,10, 1, t2);
+    })
+
+    it('should move the thing based on the target and the velocity - y axis negative',function() {
+        var t1 = new Date(2000,1,1,10,9,0,0);
+        var t2 = new Date(2000,1,1,10,9,1,0);
+        
+        var thing = new things.Thing(t1);
+        things.set_thing_target_position_and_velocity(thing,0,-10,1,t1)
+        things.update_thing(thing,t2);
+        assert_thing_values(thing,null, 0,-1, 0,-10, 1, t2);
+    })
+
+    it('should move the thing based on the target and the velocity - x and y axis positive',function() {
+        var t1 = new Date(2000,1,1,10,9,0,0);
+        var t2 = new Date(2000,1,1,10,9,1,0);
+        
+        var thing = new things.Thing(t1);
+        things.set_thing_target_position_and_velocity(thing,10,10,1,t1)
+        things.update_thing(thing,t2);
+        
+        var d = vector.distance(0,0,10,10);
+        assert_thing_values(thing,null, d,d   , 10,10, 1, t2);
     })
 })

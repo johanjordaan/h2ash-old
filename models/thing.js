@@ -1,3 +1,5 @@
+var vector = require('../utils/vector.js')
+
 var Thing = function(date) {
     this.id = null;
     set_thing_position(this,0,0,date); 
@@ -18,9 +20,8 @@ var update_thing = function(thing,date) {
     
     // Calculate the distance from the current position to the target
     // 
-    var dx = (thing.tx - thing.x);
-    var dy = (thing.ty - thing.y);
-    var r = Math.sqrt(dx*dx + dy*dy);
+    var r = vector.distance(thing.x,thing.y,thing.tx,thing.ty)
+    
     var d = t*thing.v; 
     
     // Set the things position to be the same as the target and set the velocity to zero if:
@@ -35,8 +36,9 @@ var update_thing = function(thing,date) {
     // Once all the special cases has been handled then calculate the new position for the 
     // thing
     //    
-    var px = dx/r;
-    var py = dy/r;
+    var components = vector.components(thing.x,thing.y,thing.tx,thing.ty);
+    var px = components[0]/r;
+    var py = components[1]/r;
 
     move_thing(thing, d*px, d*py, date);
 }
@@ -85,5 +87,5 @@ if(typeof module != 'undefined') {
     module.exports.set_thing_velocity = set_thing_velocity;
     module.exports.update_thing = update_thing;
 } else {
-    alert('Thing loaded');
+    alert('thing.js loaded');
 }
