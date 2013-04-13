@@ -35,6 +35,20 @@ describe('#set_thing_position', function() {
     })
 })
 
+describe('#set_thing_position_and_velocity', function() { 
+    it('should set the position of a thing to the correct values', function() {
+        var t = new Date();
+        var thing = new things.Thing(t);
+        things.set_thing_position_and_velocity(thing,2,0,3,t);
+        assert_thing_values(thing,null, 2,0, 0,0, 3, t);
+        things.set_thing_position_and_velocity(thing,-2,3,2,t);
+        assert_thing_values(thing,null, -2,3, 0,0, 2, t);
+        things.set_thing_position_and_velocity(thing,3,-4,5,t);
+        assert_thing_values(thing,null, 3,-4, 0,0, 5, t);
+    })
+})
+
+
 describe('#set_thing_target_position', function() { 
     it('should set the target position of a thing to the correct values', function() {
         var t = new Date();
@@ -47,6 +61,20 @@ describe('#set_thing_target_position', function() {
         assert_thing_values(thing,null, 0,0, -3,4, 0, t);
     })
 })
+
+describe('#set_thing_target_position_and_velocity', function() {
+    it('should set the position and velocity of a thing to the correct values', function() {
+        var t = new Date();
+        var thing = new things.Thing(t);
+        things.set_thing_target_position_and_velocity(thing,-2,0,2,t);
+        assert_thing_values(thing,null, 0,0, -2,0, 2, t);
+        things.set_thing_target_position_and_velocity(thing,2,1,5,t);
+        assert_thing_values(thing,null, 0,0, 2,1, 5, t);
+        things.set_thing_target_position_and_velocity(thing,-3,4,0,t);
+        assert_thing_values(thing,null, 0,0, -3,4, 0, t);
+    })
+})
+
 
 describe('#set_thing_velocity', function() { 
     it('should set the valocity of a thing to the correct values (negative values are allowed)', function() {
@@ -87,16 +115,14 @@ describe('#update_thing', function() {
         assert_thing_values(thing,null, 100,100, 100,100, 0, t2);
     })
 
-    
-    
-    /*it('',function() {
+    it('should move the thing based on the target and the velocity',function() {
         var t1 = new Date(2000,1,1,10,9,0,0);
-        var t2 = new Date(2000,1,1,10,9,2,0);
+        var t2 = new Date(2000,1,1,10,9,1,0);
         
         var thing = new things.Thing(t1);
-        things.set_thing_target_position(thing,2,0,t1)
+        things.set_thing_target_position(thing,10,0,t1)
         things.set_thing_velocity(thing,1,t1);
         things.update_thing(thing,t2);
-        
-    })*/
+        assert_thing_values(thing,null, 1,0, 10,0, 1, t2);
+    })
 })
