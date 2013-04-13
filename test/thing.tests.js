@@ -1,16 +1,15 @@
 var assert = require('assert')
 
-var vector = require('../utils/vector.js')
-var things = require('../models/thing.js')
-
+var Point2D = require('../utils/point.js').Point2D;
+var Thing = require('../models/thing.js').Thing;
 
 var assert_thing_values = function(thing,id,x,y,tx,ty,v,last_update) {
     assert.equal(thing.id,id)
-    assert.equal(thing.x,x);
-    assert.equal(thing.y,y);
-    assert.equal(thing.tx,tx);
-    assert.equal(thing.ty,ty);
-    assert.equal(thing.v,v);
+    assert.equal(thing.position.x,x);
+    assert.equal(thing.position.y,y);
+    assert.equal(thing.target.x,tx);
+    assert.equal(thing.target.y,ty);
+    assert.equal(thing.velocity,v);
     assert.equal(thing.last_update,last_update);
 }
 
@@ -18,12 +17,69 @@ describe('Thing', function() {
     describe('#constructor', function() {
         it('should create a new thing with all values set to the defaults', function() {
             var t = new Date();
-            var thing = new things.Thing(t);
+            var thing = new Thing(t);
             assert_thing_values(thing,null, 0,0, 0,0, 0, t);
         })
     })
 })
 
+describe('Thing', function() {
+    describe('#set', function() {
+        it('should set position, target and velocity of a thing', function() {
+            var t = new Date();
+            var thing = new Thing(t);
+            thing.set(new Point2D(10,10),new Point2D(20,20),9,t);
+            assert_thing_values(thing,null, 10,10, 20,20, 9, t);
+        })
+    })
+})
+
+describe('Thing', function() {
+    describe('#set_position', function() {
+        it('should set the position of a thing', function() {
+            var t = new Date();
+            var thing = new Thing(t);
+            thing.set_position(new Point2D(10,10),t);
+            assert_thing_values(thing,null, 10,10, 0,0, 0, t);
+        })
+    })
+})
+
+describe('Thing', function() {
+    describe('#set_position_and_velocity', function() {
+        it('should set the position and velocity of a thing', function() {
+            var t = new Date();
+            var thing = new Thing(t);
+            thing.set_position_and_velocity(new Point2D(10,10),9,t);
+            assert_thing_values(thing,null, 10,10, 0,0, 9, t);
+        })
+    })
+})
+
+describe('Thing', function() {
+    describe('#set_target', function() {
+        it('should set the target of a thing', function() {
+            var t = new Date();
+            var thing = new Thing(t);
+            thing.set_target(new Point2D(10,10),t);
+            assert_thing_values(thing,null, 0,0, 10,10, 0, t);
+        })
+    })
+})
+
+describe('Thing', function() {
+    describe('#set_target_and_velocity', function() {
+        it('should set the target and velocity of a thing', function() {
+            var t = new Date();
+            var thing = new Thing(t);
+            thing.set_target_and_velocity(new Point2D(10,10),7,t);
+            assert_thing_values(thing,null, 0,0, 10,10, 7, t);
+        })
+    })
+})
+
+
+/*
 describe('#set_thing_position', function() { 
     it('should set the position of a thing to the correct values', function() {
         var t = new Date();
@@ -168,3 +224,4 @@ describe('#update_thing', function() {
         assert_thing_values(thing,null, d,d   , 10,10, 1, t2);
     })
 })
+*/
