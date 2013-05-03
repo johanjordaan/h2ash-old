@@ -25,12 +25,11 @@ var smembers = function(client,key,callback) {
 
 // Mapper
 //
-var Mapper = function(maps) {
-    this.maps = maps;
-    this.map_dict = {};
-    for(var mi=0;mi<this.maps.length;mi++) {
-        this.map_dict[this.maps[mi].name] = this.maps[mi];
-    }
+var Mapper = function(map_list) {
+	this.maps = {};
+	_.each(map_list,function(map) {
+		this.maps[map.name] = map;
+	},this);
 }
 
 Mapper.prototype._create = function(client,obj) {
@@ -110,7 +109,7 @@ Mapper.prototype.save = function(obj) {
 }
 
 Mapper.prototype._load = function(client,map_name,id) {
-    var map = this.map_dict[map_name];
+    var map = this.maps[map_name];
     var promises = [];
     var that = this;
     
@@ -158,7 +157,7 @@ Mapper.prototype.load = function(map_name,id) {
 }
 
 Mapper.prototype.create = function(map_name,initial_data) {
-    var map = this.map_dict[map_name];
+    var map = this.maps[map_name];
     var new_obj = new map.model();
     new_obj.map = map;
 
