@@ -50,6 +50,11 @@ Mapper.prototype._update = function(client,obj) {
     _.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
 			promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),field_name,obj[field_name]));
+		} else if (field.type = 'Ref') {
+			if(field.internal) {
+			} else {
+				promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),field_name,obj.id));
+			}
 		}
     })
 
@@ -129,6 +134,12 @@ Mapper.prototype._load = function(client,map_name,id) {
 		if(field.type == 'Simple') {
 			promises.push(q.nfcall(hget,client,util.format('%s:%s',map.name,id),field_name).then(function(val) {
 				ret_val[field_name] = val;
+			}));
+		} else if(field.type == 'Ref') {
+			promises.push(q.nfcall(hget,client,util.format('%s:%s',map.name,id),field_name).then(function(val) {
+				return that._load(client,field.map_name,val).then(function(obj) {
+					ret_val[field_name] = obj;
+				}); 	
 			}));
 		}
     });

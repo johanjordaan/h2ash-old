@@ -46,7 +46,7 @@ var person_map = {
 		name 	 : { type:'Simple', default_value:'*name*' },
 		email 	 : { type:'Simple', default_value:'*email*' },
 		accounts : { type:'List', map_name : 'Account', internal : true}
-	},
+	}
 };
 
 var bank_map = {
@@ -58,10 +58,12 @@ var bank_map = {
 }
 
 var account_map = {
-    model : Account,
-    name : 'Account',
-    fields : ['type'],
-	refs : [{name:'bank',map_name:'Bank',type:'S',internal:false}]
+    model 	: Account,
+    name 	: 'Account',
+	fields	: {
+		type 	: { type:'Simple', default_value:'*type*' },
+		bank	: { type:'Ref', map_name:'Bank', internal:false }
+	}
 };
 
 
@@ -115,7 +117,7 @@ describe('Mapper', function() {
 			});
 		});
 		
-		it('should save/load a simple non hierachical object',function(done) {
+		it('should save/load a simple object (no list or refs fields)',function(done) {
 			var mapper = new Mapper([person_map,bank_map,account_map],debug_db);
 			var initial_data = {name:'The Best Bank'};
 			var b = mapper.create('Bank',initial_data);
@@ -127,6 +129,29 @@ describe('Mapper', function() {
 				loaded_bank.name.should.equal(initial_data.name);
 			}).done(done);
 		});
+		
+		it('should save/load a object with a ref (external) field',function(done) {
+			var mapper = new Mapper([person_map,bank_map,account_map],debug_db);
+			var bank_initial_data = {name:'The Best Bank'};
+			var account_initial_data = {type:'Savings Account'};
+						
+			var b = mapper.create('Bank',bank_initial_data);
+			var a = mapper.create('Account',account_initial_data);
+
+			mapper.save(b).then(function(saved_bank){
+				b.id.should.equal(1);
+				a.bank = b;
+				return mapper.save(a);
+			}).then(function() {
+				return mapper.load('Account',1);
+			}).then(function(loaded_account){
+				loaded_account.id.should.equal(1);
+				loaded_account.type.should.equal(account_initial_data.type);
+				loaded_account.bank.id.should.equal('1');
+				loaded_account.bank.name.should.equal(bank_initial_data.name);
+			}).done(done);
+		});
+
 	});
 
 })
