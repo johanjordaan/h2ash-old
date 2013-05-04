@@ -2,11 +2,12 @@ var _ = require('underscore');
 var redis = require('redis');
 var q = require('q');
 var printf = require('../utils/printf.js').printf
+var util = require('util');
 
 // Redis wrappers
 //
 var incr = function(client,name,callback) {
-    client.incr(name,callback);	
+	client.incr(name,callback);	
 }
 var hset = function(client,key,field,val,callback) {
     client.hset(key,field,val,callback);
@@ -25,24 +26,31 @@ var smembers = function(client,key,callback) {
 
 // Mapper
 //
-var Mapper = function(map_list) {
+var Mapper = function(map_list,db_id) {
 	this.maps = {};
 	_.each(map_list,function(map) {
 		this.maps[map.name] = map;
 	},this);
+	
+	if(typeof(db_id) == 'undefined')
+		this.db_id = 0;
+	else
+		this.db_id = db_id;
 }
 
 Mapper.prototype._create = function(client,obj) {
     var that = this;
     return q.nfcall(incr,client,obj.map.name).then( function(id) { 
         obj.id = id;
-        return that._update(client,obj);
+		return that._update(client,obj);
     })
 }
 Mapper.prototype._update = function(client,obj) {
     var promises = [];
-    _.each(obj.map.fields, function(field_name) {
-        promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),field_name,obj[field_name]));
+    _.each(obj.map.fields, function(field,field_name) {
+		if(field.type == 'Simple') {
+			promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),field_name,obj[field_name]));
+		}
     })
 
     var that = this;
@@ -86,6 +94,7 @@ Mapper.prototype._update_refs = function(client,obj) {
 
 Mapper.prototype.save = function(obj) {
     var client = redis.createClient();
+	client.select(this.db_id);
     var that = this;
     if(obj.id == -1) {
         return this._create(client,obj).then(function() {
@@ -116,10 +125,12 @@ Mapper.prototype._load = function(client,map_name,id) {
     var ret_val = this.create(map.name);
     ret_val.id = id;
  
-    _.each(map.fields,function(field_name) {
-        promises.push(q.nfcall(hget,client,util.format('%s:%s',map.name,id),field_name).then(function(val) {
-            ret_val[field_name] = val;
-        }));
+    _.each(map.fields,function(field,field_name) {
+		if(field.type == 'Simple') {
+			promises.push(q.nfcall(hget,client,util.format('%s:%s',map.name,id),field_name).then(function(val) {
+				ret_val[field_name] = val;
+			}));
+		}
     });
 
     _.each(map.refs,function(ref_def) {
@@ -147,10 +158,11 @@ Mapper.prototype._load = function(client,map_name,id) {
 
 Mapper.prototype.load = function(map_name,id) {
     var client = redis.createClient();
+	client.select(this.db_id);
     var that = this;
 
 	return this._load(client,map_name,id).then(function(obj) { 
-		printf('*Done(Loading) : %s,%s\n',obj.map.name,obj.id);
+		//printf('*Done(Loading) : %s,%s\n',obj.map.name,obj.id);
 		client.quit(); 
 		return obj;
 	});        

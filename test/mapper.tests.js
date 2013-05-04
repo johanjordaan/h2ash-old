@@ -1,7 +1,12 @@
-var assert = require('assert')
-var should = require('chai').should()
+var assert = require('assert');
+var should = require('chai').should();
 
+var redis = require('redis');
+var q = require('q');
+
+var printf = require('../utils/printf.js').printf
 var Mapper = require('../utils/mapper.js').Mapper;
+
 
 // Test Domain Objects
 //
@@ -9,9 +14,6 @@ var Person = function(name,email) {
     this.name = name;
     this.email = email;
     this.accounts = [];
-}
-Person.prototype.print = function() {
-	printf("%s (%s)\n",this.name,this.email);
 }
 
 var Account = function(type,bank) {
@@ -48,9 +50,11 @@ var person_map = {
 };
 
 var bank_map = {
-	model : Bank,
-	name : 'Bank',
-	fields : ['name']
+	model 	: Bank,
+	name 	: 'Bank',
+	fields 	: {
+		name 	 : { type:'Simple', default_value:'*name*' }
+	}
 }
 
 var account_map = {
@@ -60,6 +64,8 @@ var account_map = {
 	refs : [{name:'bank',map_name:'Bank',type:'S',internal:false}]
 };
 
+
+var debug_db = 15;
 
 // Need a test for duplicate named mape
 //
@@ -98,6 +104,29 @@ describe('Mapper', function() {
 			p.accounts.should.be.a('Array');
 			p.accounts.should.have.length(0);
 		});
-
 	});
+	describe('#save/#load',function() {
+		beforeEach(function(done) { 
+			var client = redis.createClient();
+			client.select(debug_db);
+			client.FLUSHDB(function() { 
+				client.quit();
+				done(); 
+			});
+		});
+		
+		it('should save/load a simple non hierachical object',function(done) {
+			var mapper = new Mapper([person_map,bank_map,account_map],debug_db);
+			var initial_data = {name:'The Best Bank'};
+			var b = mapper.create('Bank',initial_data);
+			mapper.save(b).then(function(saved_bank){
+				saved_bank.id.should.equal(1);
+				return mapper.load('Bank',1);
+			}).then(function(loaded_bank){
+				loaded_bank.id.should.equal(1);
+				loaded_bank.name.should.equal(initial_data.name);
+			}).done(done);
+		});
+	});
+
 })
