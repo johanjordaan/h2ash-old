@@ -159,19 +159,22 @@ Mapper.prototype.load = function(map_name,id) {
 Mapper.prototype.create = function(map_name,initial_data) {
     var map = this.maps[map_name];
     var new_obj = new map.model();
-    new_obj.map = map;
+    new_obj.id = -1;
+	new_obj.map = map;
 
-    if(initial_data != null) {
-        _.each(new_obj.map.fields, function(field_name) {
-			if(field_name in initial_data)
-				new_obj[field_name] = initial_data[field_name];
-        });
-		_.each(new_obj.map.refs, function(ref_def) {
-			if(ref_def.name in initial_data)
-				new_obj[ref_def.name] = initial_data[ref_def.name];
-        });
-		
-    }
+	if(typeof(initial_data) == 'undefined')
+		initial_data = {};
+	
+	_.each(new_obj.map.fields, function(field_def,field_name) {
+		if(field_name in initial_data)
+			new_obj[field_name] = initial_data[field_name];
+		else {
+			if(field_def.type == 'Simple') 
+				new_obj[field_name] = field_def.default_value;
+			else if(field_def.type == 'List')
+				new_obj[field_name] = [];
+		}
+	});
 	
     return new_obj;
 } 
