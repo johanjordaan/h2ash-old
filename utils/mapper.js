@@ -47,51 +47,43 @@ Mapper.prototype._create = function(client,obj) {
 }
 Mapper.prototype._update = function(client,obj) {
     var promises = [];
-    _.each(obj.map.fields, function(field,field_name) {
+    var that = this;
+	_.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
 			promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),field_name,obj[field_name]));
-		} else if (field.type = 'Ref') {
+		} else if (field.type == 'Ref') {
 			if(field.internal) {
+				// Save the 
 			} else {
-				promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),field_name,obj.id));
+				// if not id then throw error
+				
 			}
-		}
-    })
-
-    var that = this;
-    _.each(obj.map.refs,function(ref_def) {
-		if(ref_def.internal == true) {
-			if(ref_def.type == 'M') {
-				_.each(obj[ref_def.name],function(ref) {
-					promises.push(that.save(ref));
+		} else if (field.type == 'List') {
+			if(field.internal) {
+				_.each(obj[field_name],function(list_item) {
+					promises.push(that.save(list_item));
 				});
 			} else {
-				promises.push(that.save(obj[ref_def.name]).then(function(saved_obj) {
-					return q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),ref_def.name,saved_obj.id);
-				}));
-			}
-		} else {
-			if(ref_def.type == 'S') {
-				if(obj[ref_def.name].id == -1)
-					throw 'Object not saved and not marked internal';
-			
-				promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),ref_def.name,obj[ref_def.name].id));
+				// if id not set then throw error
 			}
 		}
-    });    
-    
+    });
+   
     return q.all(promises);
 }
 Mapper.prototype._update_refs = function(client,obj) {
     var promises = [];
-    
-	_.each(obj.map.refs, function(ref_def) {
-		if(ref_def.type == 'M') {
-			_.each(obj[ref_def.name],function(ref) {
-				promises.push(q.nfcall(sadd,client,util.format('%s:%s:%s',obj.map.name,obj.id,ref_def.name),ref.id));
-			});    
-		} else {
-		}
+    var that = this;
+
+	_.each(obj.map.fields, function(field,field_name) {
+		if(field.type == 'Simple') {
+		} else if(field.type == 'Ref') {
+			promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),field_name,obj.id));
+		} else if(field.type == 'List') {
+			_.each(obj[field_name],function(list_item) {
+				promises.push(q.nfcall(sadd,client,util.format('%s:%s:%s',obj.map.name,obj.id,field_name),list_item.id));
+			});
+		}	
 	});
     
     return q.all(promises);
@@ -141,26 +133,23 @@ Mapper.prototype._load = function(client,map_name,id) {
 					ret_val[field_name] = obj;
 				}); 	
 			}));
-		}
+		} else if(field.type == 'List') {
+	        promises.push(q.nfcall(smembers,client,util.format('%s:%s:%s',map.name,id,field_name)).then(function(ref_ids){
+				var ref_promises = [];
+				_.each(ref_ids,function(ref_id) {
+					ref_promises.push(that._load(client,field.map_name,ref_id).then(function(obj) {
+						//If none is loaded then we just don't add it to the ref
+						// else we need to first remove the item from the ref db entry
+						// this can be a non qed call since we will ignore it for this load.
+						// It would only be for house keeping
+						//
+						ret_val[field_name].push(obj);    
+					}));
+				});
+				return q.all(ref_promises);
+			}));
+		};
     });
-
-    _.each(map.refs,function(ref_def) {
-        promises.push(q.nfcall(smembers,client,util.format('%s:%s:%s',map.name,id,ref_def.name)).then(function(ref_ids){
-            var ref_promises = [];
-            _.each(ref_ids,function(ref_id) {
-                ref_promises.push(that._load(client,ref_def.map_name,ref_id).then(function(obj) {
-                    //If none is loaded then we just don't add it to the ref
-                    // else we need to first remove the item from the ref db entry
-                    // this can be a non qed call since we will ignore it for this load.
-                    // It would only be for house keeping
-                    //
-                    ret_val[ref_def.name].push(obj);    
-                }));
-            });
-            return q.all(ref_promises);
-        }));
-    });
-    
     
     return q.all(promises).then( function() {
         return ret_val;    

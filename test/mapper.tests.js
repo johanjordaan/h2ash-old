@@ -69,7 +69,8 @@ var account_map = {
 
 var debug_db = 15;
 
-// Need a test for duplicate named mape
+// Need a test for duplicate named map
+// What about creating objects that have constructors
 //
 describe('Mapper', function() {
     describe('#constructor', function() {
@@ -152,6 +153,39 @@ describe('Mapper', function() {
 			}).done(done);
 		});
 
+		it('should save/load a object with a list field ',function(done) {
+			var mapper = new Mapper([person_map,bank_map,account_map],debug_db);
+			var bank_initial_data = {name:'The Best Bank'};
+			var sa_account_initial_data = {type:'Savings Account'};
+			var cc_account_initial_data = {type:'Credit Card'};
+			var person_initial_data = {name:'johan',email:'johan@here.com'};			
+						
+			var b = mapper.create('Bank',bank_initial_data);
+			var sa = mapper.create('Account',sa_account_initial_data);
+			var cc = mapper.create('Account',cc_account_initial_data);
+			var p = mapper.create('Person',person_initial_data);
+			
+			mapper.save(b).then(function(saved_bank){
+				b.id.should.equal(1);
+				sa.bank = b;
+				cc.bank = b;
+				p.accounts.push(sa);
+				p.accounts.push(cc);
+				return mapper.save(p);
+			}).then(function() {
+				return mapper.load('Person',1);
+			}).then(function(loaded_person){
+				loaded_person.id.should.equal(1);
+				loaded_person.name.should.equal(person_initial_data.name);
+				loaded_person.email.should.equal(person_initial_data.email);
+				loaded_person.accounts.should.have.length(2);
+				
+				//loaded_account.bank.id.should.equal('1');
+				//loaded_account.bank.name.should.equal(bank_initial_data.name);
+			}).done(done);
+		});
+
+		
 	});
 
 })
