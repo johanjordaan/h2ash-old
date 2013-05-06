@@ -23,6 +23,7 @@ var Account = function(type,bank) {
 
 var Bank = function(name) {
 	this.name = name;
+	this.constructor_name = name;		// This value will not be set if the constructor was called with no parameters
 }
 
 // Test maps
@@ -55,6 +56,15 @@ var bank_map = {
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
 	}
+}
+
+var bank_map_with_constructor = {
+	model 	: Bank,
+	name 	: 'Bank',
+	fields 	: {
+		name 	 : { type:'Simple', default_value:'*name*' }
+	},
+	constructor : ['name']
 }
 
 var account_map = {
@@ -107,6 +117,14 @@ describe('Mapper', function() {
 			p.accounts.should.be.a('Array');
 			p.accounts.should.have.length(0);
 		});
+		it('should create a new object by using the constructor with the given parameters',function() {
+			var mapper = new Mapper([bank_map_with_constructor]);
+			var initial_values = {name:'Construction Bank'};
+			var b = mapper.create('Bank',initial_values);
+			b.name.should.equal(initial_values.name);
+			b.constructor_name.should.equal(initial_values.name);
+		});
+		
 	});
 	describe('#save/#load',function() {
 		beforeEach(function(done) { 

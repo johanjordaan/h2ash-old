@@ -1,7 +1,8 @@
 var _ = require('underscore');
 var redis = require('redis');
 var q = require('q');
-var printf = require('../utils/printf.js').printf
+var printf = require('../utils/printf.js').printf;
+var construct = require('../utils/constructor.js').construct;
 var util = require('util');
 
 // Redis wrappers
@@ -170,7 +171,7 @@ Mapper.prototype.load = function(map_name,id) {
 
 Mapper.prototype.create = function(map_name,initial_data) {
     var map = this.maps[map_name];
-    var new_obj = new map.model();
+    var new_obj = {};//construct(map.model).using.parameters();
     new_obj.id = -1;
 	new_obj.map = map;
 
