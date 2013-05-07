@@ -153,6 +153,16 @@ Mapper.prototype._load = function(client,map_name,id) {
     });
     
     return q.all(promises).then( function() {
+		if(!_.isUndefined(map.constructor_args)) {
+			var constructor_parms = [];
+			_.each(map.constructor_args,function(field_name) {
+				constructor_parms.push(ret_val[field_name]);
+			});
+			var new_obj = construct(map.model).using.array(constructor_parms);
+			new_obj.id = ret_val.id;
+			new_obj.map = map;
+			return new_obj;
+		}
         return ret_val;    
     });
 }
@@ -171,11 +181,11 @@ Mapper.prototype.load = function(map_name,id) {
 
 Mapper.prototype.create = function(map_name,initial_data) {
     var map = this.maps[map_name];
-    var new_obj = {};//construct(map.model).using.parameters();
+	var new_obj = construct(map.model).using.parameters();
     new_obj.id = -1;
 	new_obj.map = map;
 
-	if(typeof(initial_data) == 'undefined')
+	if(_.isUndefined(initial_data))
 		initial_data = {};
 	
 	_.each(new_obj.map.fields, function(field_def,field_name) {
@@ -189,6 +199,16 @@ Mapper.prototype.create = function(map_name,initial_data) {
 		}
 	});
 	
+	if(!_.isUndefined(map.constructor_args)) {
+		var constructor_parms = [];
+		_.each(map.constructor_args,function(field_name) {
+			constructor_parms.push(new_obj[field_name]);
+		});
+		var new_obj = construct(map.model).using.array(constructor_parms);
+	    new_obj.id = -1;
+		new_obj.map = map;
+	}
+		
     return new_obj;
 } 
 

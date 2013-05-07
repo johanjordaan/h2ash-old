@@ -64,7 +64,7 @@ var bank_map_with_constructor = {
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
 	},
-	constructor : ['name']
+	constructor_args : ['name']
 }
 
 var account_map = {
@@ -202,8 +202,23 @@ describe('Mapper', function() {
 				//loaded_account.bank.name.should.equal(bank_initial_data.name);
 			}).done(done);
 		});
-
 		
+		it('should load an object and call the constructor if constructor args are specified',function(done) {
+			var mapper = new Mapper([bank_map_with_constructor],debug_db);
+			var bank_initial_data = {name:'The Best Bank'};
+			var b = mapper.create('Bank',bank_initial_data);
+			
+			mapper.save(b).then(function(saved_bank){
+				b.id.should.equal(1);
+				b.name.should.equal(bank_initial_data.name);
+				return mapper.load('Bank',1);
+			}).then(function(loaded_bank){
+				loaded_bank.id.should.equal(1);
+				loaded_bank.name.should.equal(bank_initial_data.name);
+				loaded_bank.constructor_name.should.equal(bank_initial_data.name);
+			}).done(done);
+		});
+
 	});
 
 })
