@@ -1,5 +1,7 @@
 var assert = require('assert');
 var should = require('chai').should();
+var expect = require('chai').expect;
+
 
 var redis = require('redis');
 var q = require('q');
@@ -41,8 +43,9 @@ var Bank = function(name) {
 //         map_name - name of map to use for list and ref types  
 //         internal - for list and refs it specifies wheter new objects are created or not
 var person_map = {
-    model	: Person,
-    name 	: 'Person',
+    name 		: 'Person',
+	model		: Person,
+    model_name 	: 'Person',	
     fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' },
 		email 	 : { type:'Simple', default_value:'*email*' },
@@ -51,16 +54,18 @@ var person_map = {
 };
 
 var bank_map = {
-	model 	: Bank,
-	name 	: 'Bank',
+	name 		: 'Bank',
+	model 		: Bank,
+	model_name	: 'Bank',
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
 	}
 }
 
 var bank_map_with_constructor = {
-	model 	: Bank,
-	name 	: 'Bank',
+	name 		: 'BankWithConstructor',
+	model 		: Bank,
+	model_name	: 'Bank',
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
 	},
@@ -68,8 +73,9 @@ var bank_map_with_constructor = {
 }
 
 var account_map = {
-    model 	: Account,
-    name 	: 'Account',
+    name 		: 'Account',
+	model 		: Account,
+	model_name	: 'Account',	
 	fields	: {
 		type 	: { type:'Simple', default_value:'*type*' },
 		bank	: { type:'Ref', map_name:'Bank', internal:false }
@@ -96,6 +102,10 @@ describe('Mapper', function() {
 			mapper.maps.should.have.property(bank_map.name);
 			mapper.maps.should.have.property(account_map.name);
         });
+		it('should throw an exception if two maps have the same name', function() {
+			var fn = function() { new Mapper([bank_map,bank_map]); };
+			expect(fn).to.throw('Duplicate map [Bank]');
+		});
     });
 	describe('#create',function() {
 		it('should create an instance of the class based the map fields and defaults', function() {
@@ -120,9 +130,14 @@ describe('Mapper', function() {
 		it('should create a new object by using the constructor with the given parameters',function() {
 			var mapper = new Mapper([bank_map_with_constructor]);
 			var initial_values = {name:'Construction Bank'};
-			var b = mapper.create('Bank',initial_values);
+			var b = mapper.create('BankWithConstructor',initial_values);
 			b.name.should.equal(initial_values.name);
 			b.constructor_name.should.equal(initial_values.name);
+		});
+		it('should throw an exception of the map cannot be found',function() {
+			var mapper = new Mapper([bank_map_with_constructor]);
+			var fn = function() { mapper.create('Bank'); }
+			expect(fn).to.throw('Cannot #create object - map [Bank] not found');
 		});
 		
 	});
@@ -135,7 +150,6 @@ describe('Mapper', function() {
 				done(); 
 			});
 		});
-		
 		it('should save/load a simple object (no list or refs fields)',function(done) {
 			var mapper = new Mapper([person_map,bank_map,account_map],debug_db);
 			var initial_data = {name:'The Best Bank'};
@@ -206,12 +220,12 @@ describe('Mapper', function() {
 		it('should load an object and call the constructor if constructor args are specified',function(done) {
 			var mapper = new Mapper([bank_map_with_constructor],debug_db);
 			var bank_initial_data = {name:'The Best Bank'};
-			var b = mapper.create('Bank',bank_initial_data);
+			var b = mapper.create('BankWithConstructor',bank_initial_data);
 			
 			mapper.save(b).then(function(saved_bank){
 				b.id.should.equal(1);
 				b.name.should.equal(bank_initial_data.name);
-				return mapper.load('Bank',1);
+				return mapper.load('BankWithConstructor',1);
 			}).then(function(loaded_bank){
 				loaded_bank.id.should.equal(1);
 				loaded_bank.name.should.equal(bank_initial_data.name);

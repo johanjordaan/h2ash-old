@@ -10,17 +10,21 @@ var util = require('util');
 var incr = function(client,name,callback) {
 	client.incr(name,callback);	
 }
-var hset = function(client,key,field,val,callback) {
+var hset = function(client,name,id,field,val,callback) {
+	var key = util.format('%s:%s',name,id);
     client.hset(key,field,val,callback);
 }
-var hget = function(client,key,field,callback) {
+var hget = function(client,name,id,field,callback) {
+	var key = util.format('%s:%s',name,id);
 	client.hget(key,field,callback);
 }
-var sadd = function(client,key,val,callback) {
+var sadd = function(client,name,id,field_name,val,callback) {
+	var key = util.format('%s:%s:%s',name,id,field_name);
     client.sadd(key,val,callback);
 }
-var smembers = function(client,key,callback) {
-    client.smembers(key,callback);
+var smembers = function(client,name,id,field_name,callback) {
+    var key = util.format('%s:%s:%s',name,id,field_name);
+	client.smembers(key,callback);
 }
 
 
@@ -30,10 +34,12 @@ var smembers = function(client,key,callback) {
 var Mapper = function(map_list,db_id) {
 	this.maps = {};
 	_.each(map_list,function(map) {
+		if(!_.isUndefined(this.maps[map.name]))
+			throw 'Duplicate map ['+map.name+']';
 		this.maps[map.name] = map;
 	},this);
 	
-	if(typeof(db_id) == 'undefined')
+	if(_.isUndefined(db_id))
 		this.db_id = 0;
 	else
 		this.db_id = db_id;
@@ -41,7 +47,7 @@ var Mapper = function(map_list,db_id) {
 
 Mapper.prototype._create = function(client,obj) {
     var that = this;
-    return q.nfcall(incr,client,obj.map.name).then( function(id) { 
+    return q.nfcall(incr,client,obj.map.model_name).then( function(id) { 
         obj.id = id;
 		return that._update(client,obj);
     })
@@ -51,7 +57,7 @@ Mapper.prototype._update = function(client,obj) {
     var that = this;
 	_.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
-			promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),field_name,obj[field_name]));
+			promises.push(q.nfcall(hset,client,obj.map.model_name,obj.id,field_name,obj[field_name]));
 		} else if (field.type == 'Ref') {
 			if(field.internal) {
 				// Save the 
@@ -79,10 +85,10 @@ Mapper.prototype._update_refs = function(client,obj) {
 	_.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
 		} else if(field.type == 'Ref') {
-			promises.push(q.nfcall(hset,client,util.format('%s:%s',obj.map.name,obj.id),field_name,obj.id));
+			promises.push(q.nfcall(hset,client,obj.map.model_name,obj.id,field_name,obj.id));
 		} else if(field.type == 'List') {
 			_.each(obj[field_name],function(list_item) {
-				promises.push(q.nfcall(sadd,client,util.format('%s:%s:%s',obj.map.name,obj.id,field_name),list_item.id));
+				promises.push(q.nfcall(sadd,client,obj.map.model_name,obj.id,field_name,list_item.id));
 			});
 		}	
 	});
@@ -98,7 +104,7 @@ Mapper.prototype.save = function(obj) {
         return this._create(client,obj).then(function() {
             return that._update_refs(client,obj);
         }).then(function() { 
-            //printf('*Done(Create) : %s,%s\n',obj.map.name,obj.id);
+            //printf('*Done(Create) : %s,%s\n',obj.map.model_name,obj.id);
             client.quit(); 
 			return obj;
         });        
@@ -106,7 +112,7 @@ Mapper.prototype.save = function(obj) {
         return this._update(client,obj).then(function() { 
             return that._update_refs(client,obj);
         }).then(function() { 
-            //printf('*Done(Update) : %s,%s\n',obj.map.name,obj.id);
+            //printf('*Done(Update) : %s,%s\n',obj.map.model_name,obj.id);
             client.quit(); 
 			return obj;
         });        
@@ -125,17 +131,17 @@ Mapper.prototype._load = function(client,map_name,id) {
  
     _.each(map.fields,function(field,field_name) {
 		if(field.type == 'Simple') {
-			promises.push(q.nfcall(hget,client,util.format('%s:%s',map.name,id),field_name).then(function(val) {
+			promises.push(q.nfcall(hget,client,map.model_name,id,field_name).then(function(val) {
 				ret_val[field_name] = val;
 			}));
 		} else if(field.type == 'Ref') {
-			promises.push(q.nfcall(hget,client,util.format('%s:%s',map.name,id),field_name).then(function(val) {
+			promises.push(q.nfcall(hget,client,map.model_name,id,field_name).then(function(val) {
 				return that._load(client,field.map_name,val).then(function(obj) {
 					ret_val[field_name] = obj;
 				}); 	
 			}));
 		} else if(field.type == 'List') {
-	        promises.push(q.nfcall(smembers,client,util.format('%s:%s:%s',map.name,id,field_name)).then(function(ref_ids){
+	        promises.push(q.nfcall(smembers,client,map.model_name,id,field_name).then(function(ref_ids){
 				var ref_promises = [];
 				_.each(ref_ids,function(ref_id) {
 					ref_promises.push(that._load(client,field.map_name,ref_id).then(function(obj) {
@@ -173,14 +179,18 @@ Mapper.prototype.load = function(map_name,id) {
     var that = this;
 
 	return this._load(client,map_name,id).then(function(obj) { 
-		//printf('*Done(Loading) : %s,%s\n',obj.map.name,obj.id);
+		//printf('*Done(Loading) : %s,%s\n',obj.map.model_name,obj.id);
 		client.quit(); 
 		return obj;
 	});        
 }
 
 Mapper.prototype.create = function(map_name,initial_data) {
-    var map = this.maps[map_name];
+	var map = this.maps[map_name];
+	
+	if(_.isUndefined(map))
+		throw 'Cannot #create object - map ['+map_name+'] not found';
+	
 	var new_obj = construct(map.model).using.parameters();
     new_obj.id = -1;
 	new_obj.map = map;
