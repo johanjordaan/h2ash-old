@@ -10,29 +10,28 @@ var util = require('util');
 var incr = function(client,name,callback) {
 	client.incr(name,callback);	
 }
-var hset = function(client,name,id,field,val,callback) {
-	var key = util.format('%s:%s',name,id);
+var hset = function(client,key,field,val,callback) {
     client.hset(key,field,val,callback);
 }
-var hget = function(client,name,id,field,callback) {
-	var key = util.format('%s:%s',name,id);
+var hget = function(client,key,field,callback) {
 	client.hget(key,field,callback);
 }
-var sadd = function(client,name,id,field_name,val,callback) {
-	var key = util.format('%s:%s:%s',name,id,field_name);
+var sadd = function(client,key,val,callback) {
     client.sadd(key,val,callback);
 }
-var sadd_2 = function(client,key,val,callback) {
-    client.sadd(key,val,callback);
-}
-
-var smembers = function(client,name,id,field_name,callback) {
-    var key = util.format('%s:%s:%s',name,id,field_name);
+var smembers = function(client,key,callback) {
 	client.smembers(key,callback);
 }
 
-var smembers_2 = function(client,key,callback) {
-	client.smembers(key,callback);
+
+var make_key = function(name,id,field_name) {
+	var key;
+	if(_.isUndefined(field_name)) {
+		key = util.format('%s:%s',name,id);
+	} else {
+		key = util.format('%s:%s:%s',name,id,field_name);
+	}
+	return key;
 }
 
 
@@ -57,7 +56,7 @@ Mapper.prototype._update = function(client,obj) {
     var that = this;
 	_.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
-			promises.push(q.nfcall(hset,client,obj.map.model_name,obj.id,field_name,obj[field_name]));
+			promises.push(q.nfcall(hset,client,make_key(obj.map.model_name,obj.id),field_name,obj[field_name]));
 		} else if (field.type == 'Ref') {
 			if(field.internal) {
 				// Save the 
@@ -77,7 +76,7 @@ Mapper.prototype._update = function(client,obj) {
     });
 	
 	if(!_.isUndefined(obj.map.default_collection)) {
-		promises.push(q.nfcall(sadd_2,client,obj.map.default_collection,obj.id));	
+		promises.push(q.nfcall(sadd,client,obj.map.default_collection,obj.id));	
 	}
    
     return q.all(promises);
@@ -89,10 +88,10 @@ Mapper.prototype._update_refs = function(client,obj) {
 	_.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
 		} else if(field.type == 'Ref') {
-			promises.push(q.nfcall(hset,client,obj.map.model_name,obj.id,field_name,obj.id));
+			promises.push(q.nfcall(hset,client,make_key(obj.map.model_name,obj.id),field_name,obj.id));
 		} else if(field.type == 'List') {
 			_.each(obj[field_name],function(list_item) {
-				promises.push(q.nfcall(sadd,client,obj.map.model_name,obj.id,field_name,list_item.id));
+				promises.push(q.nfcall(sadd,client,make_key(obj.map.model_name,obj.id,field_name),list_item.id));
 			});
 		}	
 	});
@@ -134,17 +133,17 @@ Mapper.prototype._load = function(client,map,id) {
  
     _.each(map.fields,function(field,field_name) {
 		if(field.type == 'Simple') {
-			promises.push(q.nfcall(hget,client,map.model_name,id,field_name).then(function(val) {
+			promises.push(q.nfcall(hget,client,make_key(map.model_name,id),field_name).then(function(val) {
 				ret_val[field_name] = val;
 			}));
 		} else if(field.type == 'Ref') {
-			promises.push(q.nfcall(hget,client,map.model_name,id,field_name).then(function(val) {
+			promises.push(q.nfcall(hget,client,make_key(map.model_name,id),field_name).then(function(val) {
 				return that._load(client,field.map,val).then(function(obj) {
 					ret_val[field_name] = obj;
 				}); 	
 			}));
 		} else if(field.type == 'List') {
-	        promises.push(q.nfcall(smembers,client,map.model_name,id,field_name).then(function(ref_ids){
+	        promises.push(q.nfcall(smembers,client,make_key(map.model_name,id,field_name)).then(function(ref_ids){
 				var ref_promises = [];
 				_.each(ref_ids,function(ref_id) {
 					ref_promises.push(that._load(client,field.map,ref_id).then(function(obj) {
@@ -193,7 +192,7 @@ Mapper.prototype.load_all = function(map) {
 	client.select(this.db_id);
 	
 	var that = this;
-	return q.nfcall(smembers_2,client,map.default_collection).then(function(collection_ids){
+	return q.nfcall(smembers,client,map.default_collection).then(function(collection_ids){
 		var promises = [];		
 		_.each(collection_ids,function(id){
 			promises.push(that._load(client,map,id));
