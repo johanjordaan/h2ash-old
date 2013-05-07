@@ -7,7 +7,9 @@ Notes
 * Underscore rocks - Their each methods are much better than my own ones
 * key in object : eg. x = {a:'a',b:'b'}, 'a' in x => true, 'd' in x => false 
 * x = [] , x instanceof Array => true
-
+* If i can get the same functionality with less code then the less code option should win. This might mean less
+  features but the base is more solid.
+  
 
 Usefull links
 =============

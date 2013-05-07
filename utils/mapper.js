@@ -31,14 +31,7 @@ var smembers = function(client,name,id,field_name,callback) {
 
 // Mapper
 //
-var Mapper = function(map_list,db_id) {
-	this.maps = {};
-	_.each(map_list,function(map) {
-		if(!_.isUndefined(this.maps[map.name]))
-			throw 'Duplicate map ['+map.name+']';
-		this.maps[map.name] = map;
-	},this);
-	
+var Mapper = function(db_id) {
 	if(_.isUndefined(db_id))
 		this.db_id = 0;
 	else
@@ -121,12 +114,11 @@ Mapper.prototype.save = function(obj) {
 	
 }
 
-Mapper.prototype._load = function(client,map_name,id) {
-    var map = this.maps[map_name];
+Mapper.prototype._load = function(client,map,id) {
     var promises = [];
     var that = this;
     
-    var ret_val = this.create(map.name);
+    var ret_val = this.create(map);
     ret_val.id = id;
  
     _.each(map.fields,function(field,field_name) {
@@ -136,7 +128,7 @@ Mapper.prototype._load = function(client,map_name,id) {
 			}));
 		} else if(field.type == 'Ref') {
 			promises.push(q.nfcall(hget,client,map.model_name,id,field_name).then(function(val) {
-				return that._load(client,field.map_name,val).then(function(obj) {
+				return that._load(client,field.map,val).then(function(obj) {
 					ret_val[field_name] = obj;
 				}); 	
 			}));
@@ -144,7 +136,7 @@ Mapper.prototype._load = function(client,map_name,id) {
 	        promises.push(q.nfcall(smembers,client,map.model_name,id,field_name).then(function(ref_ids){
 				var ref_promises = [];
 				_.each(ref_ids,function(ref_id) {
-					ref_promises.push(that._load(client,field.map_name,ref_id).then(function(obj) {
+					ref_promises.push(that._load(client,field.map,ref_id).then(function(obj) {
 						//If none is loaded then we just don't add it to the ref
 						// else we need to first remove the item from the ref db entry
 						// this can be a non qed call since we will ignore it for this load.
@@ -173,24 +165,19 @@ Mapper.prototype._load = function(client,map_name,id) {
     });
 }
 
-Mapper.prototype.load = function(map_name,id) {
+Mapper.prototype.load = function(map,id) {
     var client = redis.createClient();
 	client.select(this.db_id);
     var that = this;
 
-	return this._load(client,map_name,id).then(function(obj) { 
+	return this._load(client,map,id).then(function(obj) { 
 		//printf('*Done(Loading) : %s,%s\n',obj.map.model_name,obj.id);
 		client.quit(); 
 		return obj;
 	});        
 }
 
-Mapper.prototype.create = function(map_name,initial_data) {
-	var map = this.maps[map_name];
-	
-	if(_.isUndefined(map))
-		throw 'Cannot #create object - map ['+map_name+'] not found';
-	
+Mapper.prototype.create = function(map,initial_data) {
 	var new_obj = construct(map.model).using.parameters();
     new_obj.id = -1;
 	new_obj.map = map;
