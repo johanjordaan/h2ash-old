@@ -40,48 +40,43 @@ var Bank = function(name) {
 // NOTE : To ref a map it must be defined before reffing. This also forces you to think about recoursive definitions
 
 var bank_map = {
-	name 		: 'Bank',
 	model 		: Bank,
 	model_name	: 'Bank',		// Should this be defaulted to name if not specifed or keep it explicit? I'm all for option 2
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
-	}
-}
-
-var bank_collection = {
-	name		: 'Banks',
-	map_name	: 'Bank',
+	},
+	default_collection : 'Banks'
 }
 
 var bank_map_with_constructor = {
-	name 		: 'BankWithConstructor',
 	model 		: Bank,
 	model_name	: 'Bank',
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
 	},
-	constructor_args : ['name']
+	constructor_args : ['name'],
+	default_collection : 'Banks'
 }
 
 var account_map = {
-    name 		: 'Account',
 	model 		: Account,
 	model_name	: 'Account',	
 	fields	: {
 		type 	: { type:'Simple', default_value:'*type*' },
 		bank	: { type:'Ref', map:bank_map, internal:false }
-	}
+	},
+	default_collection : 'Accounts'
 };
 
 var person_map = {
-    name 		: 'Person',
 	model		: Person,
     model_name 	: 'Person',
     fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' },
 		email 	 : { type:'Simple', default_value:'*email*' },
 		accounts : { type:'List', map : account_map, internal : true}
-	}
+	},
+	default_collection : 'People'
 };
 
 
@@ -147,31 +142,19 @@ describe('Mapper', function() {
 			}).done(done);
 		});
 
-		it('should save a ref to any new objecst to the collection specified in the map)',function(done) {
+		it('should save a ref to any new objects to the collection specified in the map XXX',function(done) {
 			var mapper = new Mapper(debug_db);
 			var initial_data_1 = {name:'The Best Bank'};
 			var initial_data_2 = {name:'The Worst Bank'};
 			var b1 = mapper.create(bank_map,initial_data_1);
 			var b2 = mapper.create(bank_map,initial_data_2);
-			done();
-			/*
+			
 			q.all([mapper.save(b1),mapper.save(b2)]).then(function(saved_banks) {
 				saved_banks.length.should.equal(2);
-				
-				//return mapper.add_to_collection('Banks',[b1,b2]);
-			}).then(function() {
-				return mapper.load_collection('Banks');
+				return mapper.load_all(bank_map);
 			}).then(function(loaded_banks) {
 				loaded_banks.length.should.equal(2);
 			}).done(done);
-			*/
-			/*mapper.save(b).then(function(saved_bank){
-				saved_bank.id.should.equal(1);
-				return mapper.load('Bank',1);
-			}).then(function(loaded_bank){
-				loaded_bank.id.should.equal(1);
-				loaded_bank.name.should.equal(initial_data.name);
-			}).done(done);*/
 		});
 
 		
@@ -197,7 +180,7 @@ describe('Mapper', function() {
 			}).done(done);
 		});
 
-		it('should save/load a object with a list field ',function(done) {
+		it('should save/load a object with a list field',function(done) {
 			var mapper = new Mapper(debug_db);
 			var bank_initial_data = {name:'The Best Bank'};
 			var sa_account_initial_data = {type:'Savings Account'};

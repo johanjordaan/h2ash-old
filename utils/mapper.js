@@ -22,11 +22,18 @@ var sadd = function(client,name,id,field_name,val,callback) {
 	var key = util.format('%s:%s:%s',name,id,field_name);
     client.sadd(key,val,callback);
 }
+var sadd_2 = function(client,key,val,callback) {
+    client.sadd(key,val,callback);
+}
+
 var smembers = function(client,name,id,field_name,callback) {
     var key = util.format('%s:%s:%s',name,id,field_name);
 	client.smembers(key,callback);
 }
 
+var smembers_2 = function(client,key,callback) {
+	client.smembers(key,callback);
+}
 
 
 // Mapper
@@ -68,6 +75,10 @@ Mapper.prototype._update = function(client,obj) {
 			}
 		}
     });
+	
+	if(!_.isUndefined(obj.map.default_collection)) {
+		promises.push(q.nfcall(sadd_2,client,obj.map.default_collection,obj.id));	
+	}
    
     return q.all(promises);
 }
@@ -175,6 +186,20 @@ Mapper.prototype.load = function(map,id) {
 		client.quit(); 
 		return obj;
 	});        
+}
+
+Mapper.prototype.load_all = function(map) {
+	var client = redis.createClient();
+	client.select(this.db_id);
+	
+	var that = this;
+	return q.nfcall(smembers_2,client,map.default_collection).then(function(collection_ids){
+		var promises = [];		
+		_.each(collection_ids,function(id){
+			promises.push(that._load(client,map,id));
+		});
+		return q.all(promises).then(function(collection) { client.quit(); return collection; });
+	});
 }
 
 Mapper.prototype.create = function(map,initial_data) {
