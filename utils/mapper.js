@@ -134,7 +134,10 @@ Mapper.prototype._load = function(client,map,id) {
     _.each(map.fields,function(field,field_name) {
 		if(field.type == 'Simple') {
 			promises.push(q.nfcall(hget,client,make_key(map.model_name,id),field_name).then(function(val) {
-				ret_val[field_name] = val;
+				if(!_.isUndefined(field.conversion))
+					ret_val[field_name] = field.conversion(val);
+				else
+					ret_val[field_name] = val;
 			}));
 		} else if(field.type == 'Ref') {
 			promises.push(q.nfcall(hget,client,make_key(map.model_name,id),field_name).then(function(val) {

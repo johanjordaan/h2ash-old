@@ -12,9 +12,10 @@ var Mapper = require('../utils/mapper.js').Mapper;
 
 // Test Domain Objects
 //
-var Person = function(name,surname,contact_details) {
+var Person = function(name,surname,age,contact_details) {
     this.name = name;
 	this.surname = surname;
+	this.age = age;	
 	this.contact_details = contact_details;
 	this.extra_contact_details = contact_details;
     this.accounts = [];
@@ -92,6 +93,7 @@ var person_map = {
     fields 	: {
 		name 	 		: { type:'Simple', default_value:'*name*' },
 		surname	 		: { type:'Simple', default_value:'*surname*' },
+		age		 		: { type:'Simple', default_value:10,conversion:Number },
 		contact_details	: { type:'Ref', map:contact_details_map, internal:true },
 		extra_contact_details	: { type:'Ref', map:contact_details_map, internal:true },
 		accounts 		: { type:'List', map : account_map, internal : true}
@@ -271,9 +273,22 @@ describe('Mapper', function() {
 			var fn2 = function() { mapper.load(person_map); }
 			expect(fn2).to.throw("ID not provided for load.");
 		});
-		
-		
 
+		it('should use the conversion function when specified on loading',function(done) {
+			var mapper = new Mapper(debug_db);
+			var p = mapper.create(person_map);
+			p.age = 22;
+			mapper.save(p).then(function(saved_person) {
+				p.contact_details.id.should.not.equal(p.extra_contact_details.id);
+				return mapper.load(person_map,1);
+			}).then(function(loaded_person){
+				loaded_person.contact_details.id.should.not.equal(loaded_person.extra_contact_details.id);
+				loaded_person.contact_details.email.should.equal(contact_details_map.fields.email.default_value);
+				loaded_person.age.should.be.equal(22);
+			}).done(done);
+		});
+
+		
 	});
 
 })
