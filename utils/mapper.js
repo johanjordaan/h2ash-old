@@ -202,6 +202,7 @@ Mapper.prototype.load_all = function(map) {
 }
 
 Mapper.prototype.create = function(map,initial_data) {
+	var that = this;
 	var new_obj = construct(map.model).using.parameters();
     new_obj.id = -1;
 	new_obj.map = map;
@@ -217,6 +218,10 @@ Mapper.prototype.create = function(map,initial_data) {
 				new_obj[field_name] = field_def.default_value;
 			else if(field_def.type == 'List')
 				new_obj[field_name] = [];
+			else if(field_def.type == 'Ref') {
+				if(field_def.internal)
+					new_obj[field_name] = that.create(field_def.map);
+			}
 		}
 	});
 	

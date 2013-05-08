@@ -12,9 +12,10 @@ var Mapper = require('../utils/mapper.js').Mapper;
 
 // Test Domain Objects
 //
-var Person = function(name,email) {
+var Person = function(name,surname,contact_details) {
     this.name = name;
-    this.email = email;
+	this.surname = surname;
+	this.contact_details = contact_details;
     this.accounts = [];
 }
 
@@ -26,6 +27,12 @@ var Account = function(type,bank) {
 var Bank = function(name) {
 	this.name = name;
 	this.constructor_name = name;		// This value will not be set if the constructor was called with no parameters
+}
+
+var ContactDetails = function(cel_no,tek_no,email) {
+	this.cel_no = cel_no;
+	this.tel_no = tek_no;
+	this.email = email;
 }
 
 // Test maps
@@ -41,11 +48,21 @@ var Bank = function(name) {
 
 var bank_map = {
 	model 		: Bank,
-	model_name	: 'Bank',		// Should this be defaulted to name if not specifed or keep it explicit? I'm all for option 2
+	model_name	: 'Bank',		
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
 	},
 	default_collection : 'Banks'
+}
+
+var contact_details_map = {
+	model 		: ContactDetails,
+	model_name	: 'ContactDetails',		
+	fields 	: {
+		cel_no 	 : { type:'Simple', default_value:'*cel_no*' },
+		tel_no 	 : { type:'Simple', default_value:'*tel_no*' },
+		email 	 : { type:'Simple', default_value:'*email*' }
+	},
 }
 
 var bank_map_with_constructor = {
@@ -72,9 +89,10 @@ var person_map = {
 	model		: Person,
     model_name 	: 'Person',
     fields 	: {
-		name 	 : { type:'Simple', default_value:'*name*' },
-		email 	 : { type:'Simple', default_value:'*email*' },
-		accounts : { type:'List', map : account_map, internal : true}
+		name 	 		: { type:'Simple', default_value:'*name*' },
+		surname	 		: { type:'Simple', default_value:'*surname*' },
+		contact_details	: { type:'Ref', map:contact_details_map, internal:true },
+		accounts 		: { type:'List', map : account_map, internal : true}
 	},
 	default_collection : 'People'
 };
@@ -98,17 +116,21 @@ describe('Mapper', function() {
 			var p = mapper.create(person_map);
 			p.id.should.equal(-1);
 			p.name.should.equal(person_map.fields.name.default_value);
-			p.email.should.equal(person_map.fields.email.default_value);
+			p.surname.should.equal(person_map.fields.surname.default_value);
+			p.contact_details.should.be.a('object');
+			p.contact_details.cel_no.should.equal(contact_details_map.fields.cel_no.default_value);
+			p.contact_details.tel_no.should.equal(contact_details_map.fields.tel_no.default_value);
+			p.contact_details.email.should.equal(contact_details_map.fields.email.default_value);
 			p.accounts.should.be.a('Array');
 			p.accounts.should.have.length(0);
 		});
 		it('should create an instance of the class based the map fields and defaults and the initial values', function() {
 			var mapper = new Mapper();
-			var initial_values = {email:'me@here.com'}				;
+			var initial_values = {surname:'jordaan'}				;
 			var p = mapper.create(person_map,initial_values);
 			p.id.should.equal(-1);
 			p.name.should.equal(person_map.fields.name.default_value);
-			p.email.should.equal(initial_values.email);
+			p.surname.should.equal(initial_values.surname);
 			p.accounts.should.be.a('Array');
 			p.accounts.should.have.length(0);
 		});
@@ -185,7 +207,7 @@ describe('Mapper', function() {
 			var bank_initial_data = {name:'The Best Bank'};
 			var sa_account_initial_data = {type:'Savings Account'};
 			var cc_account_initial_data = {type:'Credit Card'};
-			var person_initial_data = {name:'johan',email:'johan@here.com'};			
+			var person_initial_data = {name:'johan',surname:'jordaan'};			
 						
 			var b = mapper.create(bank_map,bank_initial_data);
 			var sa = mapper.create(account_map,sa_account_initial_data);
@@ -204,7 +226,7 @@ describe('Mapper', function() {
 			}).then(function(loaded_person){
 				loaded_person.id.should.equal(1);
 				loaded_person.name.should.equal(person_initial_data.name);
-				loaded_person.email.should.equal(person_initial_data.email);
+				loaded_person.surname.should.equal(person_initial_data.surname);
 				loaded_person.accounts.should.have.length(2);
 				
 				// Misiing some checks ?
