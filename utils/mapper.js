@@ -52,14 +52,14 @@ Mapper.prototype._create = function(client,obj) {
     })
 }
 Mapper.prototype._update = function(client,obj) {
-    var promises = [];
     var that = this;
+	var promises = [];
 	_.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
 			promises.push(q.nfcall(hset,client,make_key(obj.map.model_name,obj.id),field_name,obj[field_name]));
 		} else if (field.type == 'Ref') {
 			if(field.internal) {
-				// Save the 
+				promises.push(that.save(obj[field_name]));
 			} else {
 				// if not id then throw error
 				
@@ -88,7 +88,7 @@ Mapper.prototype._update_refs = function(client,obj) {
 	_.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
 		} else if(field.type == 'Ref') {
-			promises.push(q.nfcall(hset,client,make_key(obj.map.model_name,obj.id),field_name,obj.id));
+			promises.push(q.nfcall(hset,client,make_key(obj.map.model_name,obj.id),field_name,obj[field_name].id));
 		} else if(field.type == 'List') {
 			_.each(obj[field_name],function(list_item) {
 				promises.push(q.nfcall(sadd,client,make_key(obj.map.model_name,obj.id,field_name),list_item.id));

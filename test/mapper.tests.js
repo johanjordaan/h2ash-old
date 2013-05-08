@@ -16,6 +16,7 @@ var Person = function(name,surname,contact_details) {
     this.name = name;
 	this.surname = surname;
 	this.contact_details = contact_details;
+	this.extra_contact_details = contact_details;
     this.accounts = [];
 }
 
@@ -92,6 +93,7 @@ var person_map = {
 		name 	 		: { type:'Simple', default_value:'*name*' },
 		surname	 		: { type:'Simple', default_value:'*surname*' },
 		contact_details	: { type:'Ref', map:contact_details_map, internal:true },
+		extra_contact_details	: { type:'Ref', map:contact_details_map, internal:true },
 		accounts 		: { type:'List', map : account_map, internal : true}
 	},
 	default_collection : 'People'
@@ -247,6 +249,17 @@ describe('Mapper', function() {
 				loaded_bank.id.should.equal(1);
 				loaded_bank.name.should.equal(bank_initial_data.name);
 				loaded_bank.constructor_name.should.equal(bank_initial_data.name);
+			}).done(done);
+		});
+		
+		it('should save all internal ref fields as their own objects',function(done) {
+			var mapper = new Mapper(debug_db);
+			var p = mapper.create(person_map);
+			mapper.save(p).then(function(saved_person) {
+				p.contact_details.id.should.not.equal(p.extra_contact_details.id);
+				return mapper.load(person_map,1);
+			}).then(function(loaded_person){
+				loaded_person.contact_details.id.should.not.equal(loaded_person.extra_contact_details.id);
 			}).done(done);
 		});
 
