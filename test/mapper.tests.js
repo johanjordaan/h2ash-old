@@ -260,8 +260,19 @@ describe('Mapper', function() {
 				return mapper.load(person_map,1);
 			}).then(function(loaded_person){
 				loaded_person.contact_details.id.should.not.equal(loaded_person.extra_contact_details.id);
+				loaded_person.contact_details.email.should.equal(contact_details_map.fields.email.default_value);
 			}).done(done);
 		});
+		
+		it('should throw an exception if id or map is not provided',function() {
+			var mapper = new Mapper(debug_db);
+			var fn = function() { mapper.load(); }
+			expect(fn).to.throw("Map not provided for load.");
+			var fn2 = function() { mapper.load(person_map); }
+			expect(fn2).to.throw("ID not provided for load.");
+		});
+		
+		
 
 	});
 

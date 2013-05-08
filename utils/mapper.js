@@ -176,12 +176,14 @@ Mapper.prototype._load = function(client,map,id) {
 }
 
 Mapper.prototype.load = function(map,id) {
+	if(_.isUndefined(map)) throw 'Map not provided for load.';
+	if(_.isUndefined(id)) throw 'ID not provided for load.';
+
     var client = redis.createClient();
 	client.select(this.db_id);
     var that = this;
 
 	return this._load(client,map,id).then(function(obj) { 
-		//printf('*Done(Loading) : %s,%s\n',obj.map.model_name,obj.id);
 		client.quit(); 
 		return obj;
 	});        
