@@ -42,21 +42,24 @@ var Mapper = function(db_id) {
 		this.db_id = 0;
 	else
 		this.db_id = db_id;
+		
+    this.client = redis.createClient();
+	this.client.select(this.db_id);
 }
 
-Mapper.prototype._create = function(client,obj) {
+Mapper.prototype._create = function(obj) {
     var that = this;
-    return q.nfcall(incr,client,obj.map.model_name).then( function(id) { 
+    return q.nfcall(incr,that.client,obj.map.model_name).then( function(id) { 
         obj.id = id;
-		return that._update(client,obj);
+		return that._update(obj);
     })
 }
-Mapper.prototype._update = function(client,obj) {
+Mapper.prototype._update = function(obj) {
     var that = this;
 	var promises = [];
 	_.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
-			promises.push(q.nfcall(hset,client,make_key(obj.map.model_name,obj.id),field_name,obj[field_name]));
+			promises.push(q.nfcall(hset,that.client,make_key(obj.map.model_name,obj.id),field_name,obj[field_name]));
 		} else if (field.type == 'Ref') {
 			if(field.internal) {
 				promises.push(that.save(obj[field_name]));
@@ -76,22 +79,22 @@ Mapper.prototype._update = function(client,obj) {
     });
 	
 	if(!_.isUndefined(obj.map.default_collection)) {
-		promises.push(q.nfcall(sadd,client,obj.map.default_collection,obj.id));	
+		promises.push(q.nfcall(sadd,that.client,obj.map.default_collection,obj.id));	
 	}
    
     return q.all(promises);
 }
-Mapper.prototype._update_refs = function(client,obj) {
+Mapper.prototype._update_refs = function(obj) {
     var promises = [];
     var that = this;
 
 	_.each(obj.map.fields, function(field,field_name) {
 		if(field.type == 'Simple') {
 		} else if(field.type == 'Ref') {
-			promises.push(q.nfcall(hset,client,make_key(obj.map.model_name,obj.id),field_name,obj[field_name].id));
+			promises.push(q.nfcall(hset,that.client,make_key(obj.map.model_name,obj.id),field_name,obj[field_name].id));
 		} else if(field.type == 'List') {
 			_.each(obj[field_name],function(list_item) {
-				promises.push(q.nfcall(sadd,client,make_key(obj.map.model_name,obj.id,field_name),list_item.id));
+				promises.push(q.nfcall(sadd,that.client,make_key(obj.map.model_name,obj.id,field_name),list_item.id));
 			});
 		}	
 	});
@@ -100,23 +103,21 @@ Mapper.prototype._update_refs = function(client,obj) {
 }
 
 Mapper.prototype.save = function(obj) {
-    var client = redis.createClient();
-	client.select(this.db_id);
     var that = this;
     if(obj.id == -1) {
-        return this._create(client,obj).then(function() {
-            return that._update_refs(client,obj);
+        return this._create(obj).then(function() {
+            return that._update_refs(obj);
         }).then(function() { 
             //printf('*Done(Create) : %s,%s\n',obj.map.model_name,obj.id);
-            client.quit(); 
+            //client.quit(); 
 			return obj;
         });        
     } else {
-        return this._update(client,obj).then(function() { 
-            return that._update_refs(client,obj);
+        return this._update(obj).then(function() { 
+            return that._update_refs(obj);
         }).then(function() { 
             //printf('*Done(Update) : %s,%s\n',obj.map.model_name,obj.id);
-            client.quit(); 
+            //client.quit(); 
 			return obj;
         });        
     }
@@ -124,7 +125,7 @@ Mapper.prototype.save = function(obj) {
 	
 }
 
-Mapper.prototype._load = function(client,map,id) {
+Mapper.prototype._load = function(map,id) {
     var promises = [];
     var that = this;
     
@@ -133,23 +134,23 @@ Mapper.prototype._load = function(client,map,id) {
  
     _.each(map.fields,function(field,field_name) {
 		if(field.type == 'Simple') {
-			promises.push(q.nfcall(hget,client,make_key(map.model_name,id),field_name).then(function(val) {
+			promises.push(q.nfcall(hget,that.client,make_key(map.model_name,id),field_name).then(function(val) {
 				if(!_.isUndefined(field.conversion))
 					ret_val[field_name] = field.conversion(val);
 				else
 					ret_val[field_name] = val;
 			}));
 		} else if(field.type == 'Ref') {
-			promises.push(q.nfcall(hget,client,make_key(map.model_name,id),field_name).then(function(val) {
-				return that._load(client,field.map,val).then(function(obj) {
+			promises.push(q.nfcall(hget,that.client,make_key(map.model_name,id),field_name).then(function(val) {
+				return that._load(field.map,val).then(function(obj) {
 					ret_val[field_name] = obj;
 				}); 	
 			}));
 		} else if(field.type == 'List') {
-	        promises.push(q.nfcall(smembers,client,make_key(map.model_name,id,field_name)).then(function(ref_ids){
+	        promises.push(q.nfcall(smembers,that.client,make_key(map.model_name,id,field_name)).then(function(ref_ids){
 				var ref_promises = [];
 				_.each(ref_ids,function(ref_id) {
-					ref_promises.push(that._load(client,field.map,ref_id).then(function(obj) {
+					ref_promises.push(that._load(field.map,ref_id).then(function(obj) {
 						//If none is loaded then we just don't add it to the ref
 						// else we need to first remove the item from the ref db entry
 						// this can be a non qed call since we will ignore it for this load.
@@ -182,27 +183,21 @@ Mapper.prototype.load = function(map,id) {
 	if(_.isUndefined(map)) throw 'Map not provided for load.';
 	if(_.isUndefined(id)) throw 'ID not provided for load.';
 
-    var client = redis.createClient();
-	client.select(this.db_id);
     var that = this;
 
-	return this._load(client,map,id).then(function(obj) { 
-		client.quit(); 
+	return this._load(map,id).then(function(obj) { 
 		return obj;
 	});        
 }
 
 Mapper.prototype.load_all = function(map) {
-	var client = redis.createClient();
-	client.select(this.db_id);
-	
 	var that = this;
-	return q.nfcall(smembers,client,map.default_collection).then(function(collection_ids){
+	return q.nfcall(smembers,that.client,map.default_collection).then(function(collection_ids){
 		var promises = [];		
 		_.each(collection_ids,function(id){
-			promises.push(that._load(client,map,id));
+			promises.push(that._load(map,id));
 		});
-		return q.all(promises).then(function(collection) { client.quit(); return collection; });
+		return q.all(promises).then(function(collection) { return collection; });
 	});
 }
 
