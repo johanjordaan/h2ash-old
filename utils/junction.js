@@ -1,5 +1,11 @@
 var _ = require('underscore');
 
+// A junction is a construct that basicall synchronises a set of calls.
+// It has a call : call(func,args...) ... If the last args is a function
+// it is assumed that its a contnuation. This continuation is then wrapped in our own 
+// management code. 
+//
+
 var Junction = function() {
 	this.count = 0;
 	this.ret_vals = [];
@@ -12,10 +18,10 @@ Junction.prototype.call = function(func) {
 	// 
 	
 	var args = Array.prototype.slice.call(arguments, 1);
-	this.count = this.count+1;	
 	var old_callback = args[args.length-1];
 	
 	if(typeof(old_callback) == 'function') {
+		this.count = this.count+1;	
 		args[args.length-1] = function() {
 			var args2 = Array.prototype.slice.call(arguments);
 			that.ret_vals.push(old_callback.apply(this,args2));
