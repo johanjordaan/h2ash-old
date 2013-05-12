@@ -42,8 +42,6 @@ var make_key = function(name,id,field_name) {
 }
 
 
-// Mapper
-//
 var Mapper = function(db_id,client_count) {
 	if(_.isUndefined(db_id))
 		this.db_id = 0;
@@ -206,13 +204,9 @@ Mapper.prototype.load = function(map,id,callback) {
 			// Call the constructor for each class that requires it to be called
 			//
 			_.each(that._all(obj),function(current_obj){
-				if(!_.isUndefined(current_obj.map.constructor_args)) {
-					var constructor_parms = [];
-					_.each(current_obj.map.constructor_args,function(field_name) {
-						constructor_parms.push(current_obj[field_name]);
-					});
-					current_obj.constructor.apply(current_obj,constructor_parms);
-				}
+				_.each(current_obj.map.call_after_load,function(after_load_func) {
+					current_obj[after_load_func]();
+				});
 			});
 			callback(obj);
 		});
@@ -264,16 +258,13 @@ Mapper.prototype.create = function(map,initial_data) {
 			}
 		}
 	});
-	
-	if(!_.isUndefined(map.constructor_args)) {
-		var constructor_parms = [];
-		_.each(map.constructor_args,function(field_name) {
-			constructor_parms.push(new_obj[field_name]);
-		});
-		var new_obj = construct(map.model).using.array(constructor_parms);
-	    new_obj.id = -1;
-		new_obj.map = map;
-	}
+
+	// TODO - Inefficient : Called twice for loaded from db classes 
+	// Find a way to reduce this inefficiency
+	//
+	_.each(new_obj.map.call_after_load,function(after_load_func) {
+		new_obj[after_load_func]();
+	});
 		
     return new_obj;
 } 

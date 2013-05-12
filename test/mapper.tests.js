@@ -27,7 +27,9 @@ var Account = function(type,bank) {
 
 var Bank = function(name) {
 	this.name = name;
-	this.constructor_name = name;		// This value will not be set if the constructor was called with no parameters
+}
+Bank.prototype.init = function() {
+	this.derived_name = this.name;	
 }
 
 var ContactDetails = function(cel_no,tek_no,email) {
@@ -66,13 +68,13 @@ var contact_details_map = {
 	},
 }
 
-var bank_map_with_constructor = {
+var bank_map_with_init = {
 	model 		: Bank,
 	model_name	: 'Bank',
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
 	},
-	constructor_args : ['name'],
+	call_after_load : ['init'],
 	default_collection : 'Banks'
 }
 
@@ -140,9 +142,9 @@ describe('Mapper', function() {
 		it('should create a new object by using the constructor with the given parameters',function() {
 			var mapper = new Mapper();
 			var initial_values = {name:'Construction Bank'};
-			var b = mapper.create(bank_map_with_constructor,initial_values);
+			var b = mapper.create(bank_map_with_init,initial_values);
 			b.name.should.equal(initial_values.name);
-			b.constructor_name.should.equal(initial_values.name);
+			b.derived_name.should.equal(initial_values.name);
 		});
 	});
 	describe('#_all',function() {
@@ -289,15 +291,15 @@ describe('Mapper', function() {
 		it('should load an object and call the constructor if constructor args are specified',function(done) {
 			var mapper = new Mapper(debug_db);
 			var bank_initial_data = {name:'The Best Bank'};
-			var b = mapper.create(bank_map_with_constructor,bank_initial_data);
+			var b = mapper.create(bank_map_with_init,bank_initial_data);
 			
 			mapper.save(b,function(saved_bank){
 				b.id.should.equal(1);
 				b.name.should.equal(bank_initial_data.name);
-				mapper.load(bank_map_with_constructor,1,function(loaded_bank){
+				mapper.load(bank_map_with_init,1,function(loaded_bank){
 					loaded_bank.id.should.equal(1);
 					loaded_bank.name.should.equal(bank_initial_data.name);
-					loaded_bank.constructor_name.should.equal(bank_initial_data.name);
+					loaded_bank.derived_name.should.equal(bank_initial_data.name);
 					done();
 				});
 			})
