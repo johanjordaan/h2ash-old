@@ -157,21 +157,7 @@ Mapper.prototype._load = function(map,id,j,callback) {
 		}		
 	});
 
-/*    return q.all(promises).then( function() {
-		if(!_.isUndefined(map.constructor_args)) {
-			var constructor_parms = [];
-			_.each(map.constructor_args,function(field_name) {
-				constructor_parms.push(ret_val[field_name]);
-			});
-			var new_obj = construct(map.model).using.array(constructor_parms);
-			new_obj.id = ret_val.id;
-			new_obj.map = map;
-			return new_obj;
-		}
-        return ret_val;    
-    });*/
-	
-	callback(obj);
+	callback(obj);		// This callback seems to be a bit out of place ... Maybe it needs to be dropped totally?
 }
 
 
