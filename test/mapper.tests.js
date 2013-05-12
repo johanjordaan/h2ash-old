@@ -146,6 +146,20 @@ describe('Mapper', function() {
 			b.constructor_name.should.equal(initial_values.name);
 		});
 	});
+	describe('#_all',function() {
+		it('should list the unsaved objects in the tree',function() {
+			var mapper = new Mapper(debug_db);
+			var p = mapper.create(person_map);
+			var us = mapper._all(p);
+			us.length.should.equal(3);
+			var b = mapper.create(bank_map);
+			var a = mapper.create(account_map,{bank:b});
+			p.accounts.push(a);
+			var us = mapper._all(p);
+			us.length.should.equal(5);
+		});
+	});
+
 	describe('#save/#load',function() {
 		beforeEach(function(done) { 
 			var client = redis.createClient();
@@ -155,19 +169,37 @@ describe('Mapper', function() {
 				done(); 
 			});
 		});
+		it('xxx',function(done) {
+			var mapper = new Mapper(debug_db);
+			var p = mapper.create(person_map);
+			var b = mapper.create(bank_map);
+			var a = mapper.create(account_map,{bank:b});
+			p.accounts.push(a);
+			p.name = 'Johan';
+			mapper.save(p,function(saved_person) { 
+				saved_person.name.should.equal('Johan');
+				mapper.load(person_map,1,function(loaded_person){
+					loaded_person.name.should.equal('Johan');
+					done();
+				});
+			});
+		});
 		it('should save/load a simple object (no list or refs fields)',function(done) {
 			var mapper = new Mapper(debug_db);
 			var initial_data = {name:'The Best Bank'};
 			var b = mapper.create(bank_map,initial_data);
-			mapper.save(b).then(function(saved_bank){
+			mapper.save(b,function(saved_bank){
 				saved_bank.id.should.equal(1);
-				return mapper.load(bank_map,1);
-			}).then(function(loaded_bank){
-				loaded_bank.id.should.equal(1);
-				loaded_bank.name.should.equal(initial_data.name);
-			}).done(done);
+				mapper.load(bank_map,1,function(loaded_bank){
+					loaded_bank.id.should.equal(1);
+					loaded_bank.name.should.equal(initial_data.name);
+					done();
+				});
+			})
 		});
 
+
+		/*
 		it('should save a ref to any new objects to the collection specified in the map XXX',function(done) {
 			var mapper = new Mapper(debug_db);
 			var initial_data_1 = {name:'The Best Bank'};
@@ -182,8 +214,8 @@ describe('Mapper', function() {
 				loaded_banks.length.should.equal(2);
 			}).done(done);
 		});
+		*/
 
-		
 		it('should save/load a object with a ref (external) field',function(done) {
 			var mapper = new Mapper(debug_db);
 			var bank_initial_data = {name:'The Best Bank'};
@@ -192,18 +224,19 @@ describe('Mapper', function() {
 			var b = mapper.create(bank_map,bank_initial_data);
 			var a = mapper.create(account_map,account_initial_data);
 
-			mapper.save(b).then(function(saved_bank){
+			mapper.save(b,function(saved_bank){
 				b.id.should.equal(1);
 				a.bank = b;
-				return mapper.save(a);
-			}).then(function() {
-				return mapper.load(account_map,1);
-			}).then(function(loaded_account){
-				loaded_account.id.should.equal(1);
-				loaded_account.type.should.equal(account_initial_data.type);
-				loaded_account.bank.id.should.equal('1');
-				loaded_account.bank.name.should.equal(bank_initial_data.name);
-			}).done(done);
+				mapper.save(a,function(saved_account) {
+					mapper.load(account_map,1,function(loaded_account){
+						loaded_account.id.should.equal(1);
+						loaded_account.type.should.equal(account_initial_data.type);
+						loaded_account.bank.id.should.equal(1);
+						loaded_account.bank.name.should.equal(bank_initial_data.name);
+						done();
+					});
+				});
+			})
 		});
 
 		it('should save/load a object with a list field',function(done) {
@@ -218,42 +251,46 @@ describe('Mapper', function() {
 			var cc = mapper.create(account_map,cc_account_initial_data);
 			var p = mapper.create(person_map,person_initial_data);
 			
-			mapper.save(b).then(function(saved_bank){
+			mapper.save(b,function(saved_bank){
 				b.id.should.equal(1);
 				sa.bank = b;
 				cc.bank = b;
 				p.accounts.push(sa);
 				p.accounts.push(cc);
-				return mapper.save(p);
-			}).then(function() {
-				return mapper.load(person_map,1);
-			}).then(function(loaded_person){
-				loaded_person.id.should.equal(1);
-				loaded_person.name.should.equal(person_initial_data.name);
-				loaded_person.surname.should.equal(person_initial_data.surname);
-				loaded_person.accounts.should.have.length(2);
-				
-				// Misiing some checks ?
-				
-			}).done(done);
+				mapper.save(p,function() {
+					mapper.load(person_map,1,function(loaded_person){
+						loaded_person.id.should.equal(1);
+						loaded_person.name.should.equal(person_initial_data.name);
+						loaded_person.surname.should.equal(person_initial_data.surname);
+						loaded_person.accounts.should.have.length(2);
+						// Misiing some checks ?
+						done();
+					});
+				});
+			})
 		});
 		
+		
+		/*
 		it('should load an object and call the constructor if constructor args are specified',function(done) {
 			var mapper = new Mapper(debug_db);
 			var bank_initial_data = {name:'The Best Bank'};
 			var b = mapper.create(bank_map_with_constructor,bank_initial_data);
 			
-			mapper.save(b).then(function(saved_bank){
+			mapper.save(b,function(saved_bank){
 				b.id.should.equal(1);
 				b.name.should.equal(bank_initial_data.name);
-				return mapper.load(bank_map_with_constructor,1);
-			}).then(function(loaded_bank){
-				loaded_bank.id.should.equal(1);
-				loaded_bank.name.should.equal(bank_initial_data.name);
-				loaded_bank.constructor_name.should.equal(bank_initial_data.name);
-			}).done(done);
+				mapper.load(bank_map_with_constructor,1,function(loaded_bank){
+					loaded_bank.id.should.equal(1);
+					loaded_bank.name.should.equal(bank_initial_data.name);
+					loaded_bank.constructor_name.should.equal(bank_initial_data.name);
+					done();
+				});
+			})
 		});
-		
+		*/
+
+		/*
 		it('should save all internal ref fields as their own objects',function(done) {
 			var mapper = new Mapper(debug_db);
 			var p = mapper.create(person_map);
@@ -265,6 +302,7 @@ describe('Mapper', function() {
 				loaded_person.contact_details.email.should.equal(contact_details_map.fields.email.default_value);
 			}).done(done);
 		});
+		*/
 		
 		it('should throw an exception if id or map is not provided',function() {
 			var mapper = new Mapper(debug_db);
@@ -274,21 +312,20 @@ describe('Mapper', function() {
 			expect(fn2).to.throw("ID not provided for load.");
 		});
 
+		
 		it('should use the conversion function when specified on loading',function(done) {
 			var mapper = new Mapper(debug_db);
 			var p = mapper.create(person_map);
 			p.age = 22;
-			mapper.save(p).then(function(saved_person) {
+			mapper.save(p,function(saved_person) {
 				p.contact_details.id.should.not.equal(p.extra_contact_details.id);
-				return mapper.load(person_map,1);
-			}).then(function(loaded_person){
-				loaded_person.contact_details.id.should.not.equal(loaded_person.extra_contact_details.id);
-				loaded_person.contact_details.email.should.equal(contact_details_map.fields.email.default_value);
-				loaded_person.age.should.be.equal(22);
-			}).done(done);
+				mapper.load(person_map,1,function(loaded_person){
+					loaded_person.contact_details.id.should.not.equal(loaded_person.extra_contact_details.id);
+					loaded_person.contact_details.email.should.equal(contact_details_map.fields.email.default_value);
+					loaded_person.age.should.be.equal(22);
+					done();
+				});
+			});
 		});
-
-		
 	});
-
 })

@@ -3,6 +3,7 @@ var redis = require('redis');
 var q = require('q');
 var printf = require('../utils/printf.js').printf;
 var construct = require('../utils/constructor.js').construct;
+var Junction = require('../utils/junction.js').Junction;
 var util = require('util');
 
 // Redis wrappers
@@ -102,7 +103,62 @@ Mapper.prototype._update_refs = function(obj) {
     return q.all(promises);
 }
 
-Mapper.prototype.save = function(obj) {
+Mapper.prototype._all = function(obj,stack) {
+	var that = this;
+	if(_.isUndefined(stack)) stack = [];
+	stack.push(obj);
+
+	_.each(obj.map.fields,function(field,field_name) {
+		if(field.type == 'Ref') {
+			that._all(obj[field_name],stack);
+		} else if(field.type == 'List') {
+			_.each(obj[field_name],function(child) {
+				that._all(child,stack);
+			});
+		}
+	});	
+	
+	return stack;
+} 
+
+Mapper.prototype.save = function(obj,callback) {
+	var that = this;
+	var j = new Junction();
+	var all_objects = that._all(obj)
+	_.each(all_objects,function(current_item) {
+		if(current_item.id == -1) {
+			j.call(incr,that.client,current_item.map.model_name,function(err,id){
+				current_item.id = id;
+			});
+		}
+	});
+	j.finalise(function() {
+		var j2 = new Junction();
+		
+		_.each(all_objects,function(current_object){
+			var object_key = current_object.map.model_name+':'+current_object.id;
+			_.each(current_object.map.fields,function(field,field_name){
+			
+				if(field.type == 'Simple') {
+					j2.call(hset,that.client,object_key,field_name,current_object[field_name],function(){});
+				} else if(field.type == 'Ref') {
+					j2.call(hset,that.client,object_key,field_name,current_object[field_name].id,function(){});
+				} else if(field.type == 'List') {
+					_.each(current_object[field_name],function(child){
+						j2.call(sadd,that.client,object_key+':'+field_name,child.id,function() {});
+					});
+				}
+			});
+		});
+		
+		j2.finalise(function(){
+			callback(obj);
+		});
+		
+	});
+}
+
+Mapper.prototype.saveX = function(obj) {
     var that = this;
     if(obj.id == -1) {
         return this._create(obj).then(function() {
@@ -125,7 +181,7 @@ Mapper.prototype.save = function(obj) {
 	
 }
 
-Mapper.prototype._load = function(map,id) {
+Mapper.prototype._loadX = function(map,id) {
     var promises = [];
     var that = this;
     
@@ -179,12 +235,77 @@ Mapper.prototype._load = function(map,id) {
     });
 }
 
-Mapper.prototype.load = function(map,id) {
+Mapper.prototype._load = function(map,id,j,callback) {
+    var that = this;
+    
+    var obj = this.create(map);
+    obj.id = id;
+ 
+    _.each(obj.map.fields,function(field,field_name) {
+		var object_key = obj.map.model_name+':'+obj.id;
+		if(field.type == 'Simple') {
+			j.call(hget,that.client,object_key,field_name,function(err,val){
+				if(!_.isUndefined(field.conversion))
+					obj[field_name] = field.conversion(val);
+				else
+					obj[field_name] = val;
+			});
+		} else if(field.type == 'Ref'){
+			j.call(hget,that.client,object_key,field_name,function(err,child_id){
+				that._load(field.map,parseInt(child_id),j,function(ref_obj){
+					obj[field_name] = ref_obj;
+				});
+			});
+		} else if(field.type == 'List'){
+			j.call(smembers,that.client,object_key+':'+field_name,function(err,child_ids){
+				_.each(child_ids,function(child_id){
+					that._load(field.map,parseInt(child_id),j,function(child_obj){
+						obj[field_name].push(child_obj);
+					});
+				});
+			});
+		}		
+	});
+
+/*    return q.all(promises).then( function() {
+		if(!_.isUndefined(map.constructor_args)) {
+			var constructor_parms = [];
+			_.each(map.constructor_args,function(field_name) {
+				constructor_parms.push(ret_val[field_name]);
+			});
+			var new_obj = construct(map.model).using.array(constructor_parms);
+			new_obj.id = ret_val.id;
+			new_obj.map = map;
+			return new_obj;
+		}
+        return ret_val;    
+    });*/
+	
+	callback(obj);
+}
+
+
+Mapper.prototype.load = function(map,id,callback) {
 	if(_.isUndefined(map)) throw 'Map not provided for load.';
 	if(_.isUndefined(id)) throw 'ID not provided for load.';
-
     var that = this;
 
+	var j = new Junction();
+	var obj = null;
+	this._load(map,id,j,function(obj) {
+		j.finalise(function(){
+			callback(obj);
+		});
+	});
+}
+
+
+Mapper.prototype.loadX = function(map,id) {
+	if(_.isUndefined(map)) throw 'Map not provided for load.';
+	if(_.isUndefined(id)) throw 'ID not provided for load.';
+    var that = this;
+
+    // load all this object's
 	return this._load(map,id).then(function(obj) { 
 		return obj;
 	});        
