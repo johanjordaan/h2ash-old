@@ -149,6 +149,10 @@ Mapper.prototype.save = function(obj,callback) {
 					});
 				}
 			});
+			
+			if(!_.isUndefined(current_object.map.default_collection)) {
+				j2.call(sadd,that.client,current_object.map.default_collection,current_object.id);	
+			}
 		});
 		
 		j2.finalise(function(){
@@ -156,6 +160,24 @@ Mapper.prototype.save = function(obj,callback) {
 		});
 		
 	});
+}
+
+Mapper.prototype.save_all = function(obj_list,callback) {
+	var that = this;
+	
+	var saved_obj_list = [];
+	var j = new Junction();
+	
+	_.each(obj_list,function(obj) { 
+		j.call(that,'save',obj,function(obj) {
+			saved_obj_list.push(obj);
+		});
+	});
+	
+	j.finalise(function() { 
+		callback(saved_obj_list);
+	});
+	
 }
 
 Mapper.prototype.saveX = function(obj) {
@@ -311,7 +333,29 @@ Mapper.prototype.loadX = function(map,id) {
 	});        
 }
 
-Mapper.prototype.load_all = function(map) {
+Mapper.prototype.load_all = function(map,callback) {
+	var that = this;
+
+	var loaded_obj_list = [];
+	if(_.isUndefined(map.default_collection)) {
+		callback(loaded_obj_list);
+		return;
+	}
+	smembers(that.client,map.default_collection,function(err,obj_ids) {
+		var j = new Junction();
+		_.each(obj_ids,function(id){
+			
+			j.call(that,'load',map,id,function(loaded_obj){
+				loaded_obj_list.push(loaded_obj);
+			})
+		});
+		j.finalise(function(){
+			callback(loaded_obj_list);
+		})
+	});
+}
+
+Mapper.prototype.load_allX = function(map) {
 	var that = this;
 	return q.nfcall(smembers,that.client,map.default_collection).then(function(collection_ids){
 		var promises = [];		
