@@ -61,6 +61,45 @@ describe('Junction', function() {
 			});
 			
 		})
+		it('should call the method on a class',function(){
+			var total = 0;
+			var X = function() {
+			}
+			X.prototype.add = function(a,b,ms,callback) {
+				setTimeout(function() {
+					total = total+a+b;
+					callback(a+b);
+				},ms);
+			};
+			
+			var x = new X();
+		
+			var j = new Junction();
+			j.call(x,'add',1,2,10,function(cb_value) {
+				j.count.should.equal(2);
+				total.should.equal(3);
+				cb_value.should.equal(3);
+				return cb_value;
+			});
+			
+			j.call(x,'add',4,8,20,function(cb_value) {
+				j.count.should.equal(1);
+				total.should.equal(15);
+				cb_value.should.equal(12);
+				return cb_value;
+			});
+			
+			j.finalise(function (ret_vals) { 
+				j.count.should.equal(0);
+				ret_vals.should.be.a('Array');
+				ret_vals.length.should.equal(2);
+				ret_vals[0].should.equal(20);
+				ret_vals[1].should.equal(3);
+				ret_vals[2].should.equal(12);
+				done();
+			});
+			
+		})
 		
 	});
 })

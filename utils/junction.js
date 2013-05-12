@@ -10,14 +10,23 @@ var Junction = function() {
 	this.count = 0;
 	this.ret_vals = [];
 }
-Junction.prototype.call = function(func) {
+Junction.prototype.call = function() {
 	var that = this;
+	
+	var args_offset = 1;
+	var func = arguments['0'];
+	var context = this;
+	if(!_.isFunction(arguments['0'])) {				// _.isObject seesm to not work here ??
+		args_offset = 2;
+		context = arguments['0'];
+		func = context[arguments['1']];
+	} 
 	
 	// It is assumed that func is a function and that the last of its arguments is a callback
 	// The callback is replaced with our own wrapper and called within the context of the wrapper
 	// 
 	
-	var args = Array.prototype.slice.call(arguments, 1);
+	var args = Array.prototype.slice.call(arguments, args_offset);
 	var old_callback = args[args.length-1];
 	
 	if(typeof(old_callback) == 'function') {
@@ -30,7 +39,7 @@ Junction.prototype.call = function(func) {
 				if(!_.isUndefined(that.f))
 					that.f(that.ret_vals);
 		}
-		func.apply(this,args);
+		func.apply(context,args);
 	} else {
 		that.ret_vals.push(func.apply(this,args));
 	}
