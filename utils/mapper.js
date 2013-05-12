@@ -48,61 +48,6 @@ var Mapper = function(db_id) {
 	this.client.select(this.db_id);
 }
 
-Mapper.prototype._create = function(obj) {
-    var that = this;
-    return q.nfcall(incr,that.client,obj.map.model_name).then( function(id) { 
-        obj.id = id;
-		return that._update(obj);
-    })
-}
-Mapper.prototype._update = function(obj) {
-    var that = this;
-	var promises = [];
-	_.each(obj.map.fields, function(field,field_name) {
-		if(field.type == 'Simple') {
-			promises.push(q.nfcall(hset,that.client,make_key(obj.map.model_name,obj.id),field_name,obj[field_name]));
-		} else if (field.type == 'Ref') {
-			if(field.internal) {
-				promises.push(that.save(obj[field_name]));
-			} else {
-				// if not id then throw error
-				
-			}
-		} else if (field.type == 'List') {
-			if(field.internal) {
-				_.each(obj[field_name],function(list_item) {
-					promises.push(that.save(list_item));
-				});
-			} else {
-				// if id not set then throw error
-			}
-		}
-    });
-	
-	if(!_.isUndefined(obj.map.default_collection)) {
-		promises.push(q.nfcall(sadd,that.client,obj.map.default_collection,obj.id));	
-	}
-   
-    return q.all(promises);
-}
-Mapper.prototype._update_refs = function(obj) {
-    var promises = [];
-    var that = this;
-
-	_.each(obj.map.fields, function(field,field_name) {
-		if(field.type == 'Simple') {
-		} else if(field.type == 'Ref') {
-			promises.push(q.nfcall(hset,that.client,make_key(obj.map.model_name,obj.id),field_name,obj[field_name].id));
-		} else if(field.type == 'List') {
-			_.each(obj[field_name],function(list_item) {
-				promises.push(q.nfcall(sadd,that.client,make_key(obj.map.model_name,obj.id,field_name),list_item.id));
-			});
-		}	
-	});
-    
-    return q.all(promises);
-}
-
 Mapper.prototype._all = function(obj,stack) {
 	var that = this;
 	if(_.isUndefined(stack)) stack = [];
@@ -180,90 +125,13 @@ Mapper.prototype.save_all = function(obj_list,callback) {
 	
 }
 
-Mapper.prototype.saveX = function(obj) {
-    var that = this;
-    if(obj.id == -1) {
-        return this._create(obj).then(function() {
-            return that._update_refs(obj);
-        }).then(function() { 
-            //printf('*Done(Create) : %s,%s\n',obj.map.model_name,obj.id);
-            //client.quit(); 
-			return obj;
-        });        
-    } else {
-        return this._update(obj).then(function() { 
-            return that._update_refs(obj);
-        }).then(function() { 
-            //printf('*Done(Update) : %s,%s\n',obj.map.model_name,obj.id);
-            //client.quit(); 
-			return obj;
-        });        
-    }
-	
-	
-}
-
-Mapper.prototype._loadX = function(map,id) {
-    var promises = [];
-    var that = this;
-    
-    var ret_val = this.create(map);
-    ret_val.id = id;
- 
-    _.each(map.fields,function(field,field_name) {
-		if(field.type == 'Simple') {
-			promises.push(q.nfcall(hget,that.client,make_key(map.model_name,id),field_name).then(function(val) {
-				if(!_.isUndefined(field.conversion))
-					ret_val[field_name] = field.conversion(val);
-				else
-					ret_val[field_name] = val;
-			}));
-		} else if(field.type == 'Ref') {
-			promises.push(q.nfcall(hget,that.client,make_key(map.model_name,id),field_name).then(function(val) {
-				return that._load(field.map,val).then(function(obj) {
-					ret_val[field_name] = obj;
-				}); 	
-			}));
-		} else if(field.type == 'List') {
-	        promises.push(q.nfcall(smembers,that.client,make_key(map.model_name,id,field_name)).then(function(ref_ids){
-				var ref_promises = [];
-				_.each(ref_ids,function(ref_id) {
-					ref_promises.push(that._load(field.map,ref_id).then(function(obj) {
-						//If none is loaded then we just don't add it to the ref
-						// else we need to first remove the item from the ref db entry
-						// this can be a non qed call since we will ignore it for this load.
-						// It would only be for house keeping
-						//
-						ret_val[field_name].push(obj);    
-					}));
-				});
-				return q.all(ref_promises);
-			}));
-		};
-    });
-    
-    return q.all(promises).then( function() {
-		if(!_.isUndefined(map.constructor_args)) {
-			var constructor_parms = [];
-			_.each(map.constructor_args,function(field_name) {
-				constructor_parms.push(ret_val[field_name]);
-			});
-			var new_obj = construct(map.model).using.array(constructor_parms);
-			new_obj.id = ret_val.id;
-			new_obj.map = map;
-			return new_obj;
-		}
-        return ret_val;    
-    });
-}
-
 Mapper.prototype._load = function(map,id,j,callback) {
     var that = this;
     
     var obj = this.create(map);
     obj.id = id;
  
-    _.each(obj.map.fields,function(field,field_name) {
+     _.each(obj.map.fields,function(field,field_name) {
 		var object_key = obj.map.model_name+':'+obj.id;
 		if(field.type == 'Simple') {
 			j.call(hget,that.client,object_key,field_name,function(err,val){
@@ -316,21 +184,20 @@ Mapper.prototype.load = function(map,id,callback) {
 	var obj = null;
 	this._load(map,id,j,function(obj) {
 		j.finalise(function(){
+			// Call the constructor for each class that requires it to be called
+			//
+			_.each(that._all(obj),function(current_obj){
+				if(!_.isUndefined(current_obj.map.constructor_args)) {
+					var constructor_parms = [];
+					_.each(current_obj.map.constructor_args,function(field_name) {
+						constructor_parms.push(current_obj[field_name]);
+					});
+					current_obj.constructor.apply(current_obj,constructor_parms);
+				}
+			});
 			callback(obj);
 		});
 	});
-}
-
-
-Mapper.prototype.loadX = function(map,id) {
-	if(_.isUndefined(map)) throw 'Map not provided for load.';
-	if(_.isUndefined(id)) throw 'ID not provided for load.';
-    var that = this;
-
-    // load all this object's
-	return this._load(map,id).then(function(obj) { 
-		return obj;
-	});        
 }
 
 Mapper.prototype.load_all = function(map,callback) {
@@ -352,17 +219,6 @@ Mapper.prototype.load_all = function(map,callback) {
 		j.finalise(function(){
 			callback(loaded_obj_list);
 		})
-	});
-}
-
-Mapper.prototype.load_allX = function(map) {
-	var that = this;
-	return q.nfcall(smembers,that.client,map.default_collection).then(function(collection_ids){
-		var promises = [];		
-		_.each(collection_ids,function(id){
-			promises.push(that._load(map,id));
-		});
-		return q.all(promises).then(function(collection) { return collection; });
 	});
 }
 

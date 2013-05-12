@@ -287,8 +287,6 @@ describe('Mapper', function() {
 			})
 		});
 		
-		
-		/*
 		it('should load an object and call the constructor if constructor args are specified',function(done) {
 			var mapper = new Mapper(debug_db);
 			var bank_initial_data = {name:'The Best Bank'};
@@ -305,8 +303,6 @@ describe('Mapper', function() {
 				});
 			})
 		});
-		*/
-
 		
 		it('should save all internal ref fields as their own objects',function(done) {
 			var mapper = new Mapper(debug_db);
