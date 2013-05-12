@@ -1,6 +1,9 @@
 var _ = require('underscore');
 
 var Point2D = function(x,y) {
+	if(_.isUndefined(x) && _.isUndefined(this.x)) { x = 0; }
+	if(_.isUndefined(y) && _.isUndefined(this.y)) { y = 0; }
+	
 	this.handlers = { on_change : [] };
     this.set(x,y);
 }

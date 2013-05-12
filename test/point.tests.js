@@ -16,6 +16,10 @@ describe('Point2D', function() {
             var p = new point.Point2D(10,10);
             assert_point_values(p, 10, 10 );
         })
+		it('should create a new point default values', function() {
+            var p = new point.Point2D();
+            assert_point_values(p, 0, 0 );
+        })
     })
     describe('#set', function() {
         it('should set the points coordinates to the new values', function() {
