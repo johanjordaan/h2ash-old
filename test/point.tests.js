@@ -7,7 +7,6 @@ var assert_point_values = function(point,x,y) {
     assert.equal(point.y,y);
 }
 
-
 describe('Point2D', function() {
     describe('#constructor', function() {
         it('should create a new point with all values set to the specified values', function() {

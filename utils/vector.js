@@ -1,29 +1,30 @@
+var _ = require('underscore');
 var Point2D = require('./point.js').Point2D; 
 
-var Vector2D = function(p1,p2) {
+var Vector2D = function() {
     this.p1 = new Point2D(0,0);
     this.p2 = new Point2D(0,0);
-    this.set(p1,p2);
+	this.set(this.p1.x,this.p1.y,this.p2.x,this.p2.y);
 }
 
-Vector2D.prototype.set = function(p1,p2) {
-    this.p1.x = p1.x;
-    this.p1.y = p1.y;
-    this.p2.x = p2.x;
-    this.p2.y = p2.y;
+Vector2D.prototype.set = function(x1,y1,x2,y2) {
+    this.p1.x = x1;
+    this.p1.y = y1;
+    this.p2.x = x2;
+    this.p2.y = y2;
     
     this._update_derived_values();
 }
 
-Vector2D.prototype.set_p1 = function(p1) {
-    this.p1.x = p1.x;
-    this.p1.y = p1.y;
+Vector2D.prototype.set_p1 = function(x1,y1) {
+    this.p1.x = x1;
+    this.p1.y = y1;
     this._update_derived_values();
 }
 
-Vector2D.prototype.set_p2 = function(p2) {
-    this.p2.x = p2.x;
-    this.p2.y = p2.y;
+Vector2D.prototype.set_p2 = function(x2,y2) {
+    this.p2.x = x2;
+    this.p2.y = y2;
     this._update_derived_values();
 }
 

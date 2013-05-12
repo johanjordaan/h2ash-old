@@ -4,7 +4,6 @@ var expect = require('chai').expect;
 
 
 var redis = require('redis');
-var q = require('q');
 
 var printf = require('../utils/printf.js').printf
 var Mapper = require('../utils/mapper.js').Mapper;

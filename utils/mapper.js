@@ -1,6 +1,5 @@
 var _ = require('underscore');
 var redis = require('redis');
-var q = require('q');
 var printf = require('../utils/printf.js').printf;
 var construct = require('../utils/constructor.js').construct;
 var Junction = require('../utils/junction.js').Junction;
@@ -8,16 +7,23 @@ var util = require('util');
 
 // Redis wrappers
 //
+var incrCount = 0;
+var hsetCount = 0;
+var saddCount = 0;
+
 var incr = function(client,name,callback) {
+	incrCount++;
 	client.incr(name,callback);	
 }
 var hset = function(client,key,field,val,callback) {
-    client.hset(key,field,val,callback);
+    hsetCount++;
+	client.hset(key,field,val,callback);
 }
 var hget = function(client,key,field,callback) {
 	client.hget(key,field,callback);
 }
 var sadd = function(client,key,val,callback) {
+	saddCount++;
     client.sadd(key,val,callback);
 }
 var smembers = function(client,key,callback) {
@@ -38,15 +44,42 @@ var make_key = function(name,id,field_name) {
 
 // Mapper
 //
-var Mapper = function(db_id) {
+var Mapper = function(db_id,client_count) {
 	if(_.isUndefined(db_id))
 		this.db_id = 0;
 	else
 		this.db_id = db_id;
+
+	if(_.isUndefined(client_count))
+		this.client_count = 1;
+	else
+		this.client_count = client_count;
+
 		
-    this.client = redis.createClient();
-	this.client.select(this.db_id);
+	this.clients = [];
+	for(var i=0;i<this.client_count;i++) {
+		var c = redis.createClient();;
+		c.select(this.db_id);
+		this.clients.push(c);
+	}
+	this.current_client = 0;
 }
+
+Mapper.prototype._get_client = function() {
+	this.current_client = this.current_client +1;
+	if(this.current_client>=this.client_count) {
+		this.current_client = 0;
+	}
+	return this.clients[this.current_client];
+}
+
+Mapper.prototype.quit = function() {
+	_.each(this.clients,function(client){
+		client.quit();
+	});
+	printf('incr:%s,hset:%s,sadd:%s\n',incrCount,hsetCount,saddCount);
+}
+
 
 Mapper.prototype._all = function(obj,stack) {
 	var that = this;
@@ -72,7 +105,7 @@ Mapper.prototype.save = function(obj,callback) {
 	var all_objects = that._all(obj)
 	_.each(all_objects,function(current_item) {
 		if(current_item.id == -1) {
-			j.call(incr,that.client,current_item.map.model_name,function(err,id){
+			j.call(incr,that._get_client(),current_item.map.model_name,function(err,id){
 				current_item.id = id;
 			});
 		}
@@ -85,18 +118,18 @@ Mapper.prototype.save = function(obj,callback) {
 			_.each(current_object.map.fields,function(field,field_name){
 			
 				if(field.type == 'Simple') {
-					j2.call(hset,that.client,object_key,field_name,current_object[field_name],function(){});
+					j2.call(hset,that._get_client(),object_key,field_name,current_object[field_name],function(){});
 				} else if(field.type == 'Ref') {
-					j2.call(hset,that.client,object_key,field_name,current_object[field_name].id,function(){});
+					j2.call(hset,that._get_client(),object_key,field_name,current_object[field_name].id,function(){});
 				} else if(field.type == 'List') {
 					_.each(current_object[field_name],function(child){
-						j2.call(sadd,that.client,object_key+':'+field_name,child.id,function() {});
+						j2.call(sadd,that._get_client(),object_key+':'+field_name,child.id,function() {});
 					});
 				}
 			});
 			
 			if(!_.isUndefined(current_object.map.default_collection)) {
-				j2.call(sadd,that.client,current_object.map.default_collection,current_object.id);	
+				j2.call(sadd,that._get_client(),current_object.map.default_collection,current_object.id);	
 			}
 		});
 		
@@ -134,20 +167,20 @@ Mapper.prototype._load = function(map,id,j,callback) {
      _.each(obj.map.fields,function(field,field_name) {
 		var object_key = obj.map.model_name+':'+obj.id;
 		if(field.type == 'Simple') {
-			j.call(hget,that.client,object_key,field_name,function(err,val){
+			j.call(hget,that._get_client(),object_key,field_name,function(err,val){
 				if(!_.isUndefined(field.conversion))
 					obj[field_name] = field.conversion(val);
 				else
 					obj[field_name] = val;
 			});
 		} else if(field.type == 'Ref'){
-			j.call(hget,that.client,object_key,field_name,function(err,child_id){
+			j.call(hget,that._get_client(),object_key,field_name,function(err,child_id){
 				that._load(field.map,parseInt(child_id),j,function(ref_obj){
 					obj[field_name] = ref_obj;
 				});
 			});
 		} else if(field.type == 'List'){
-			j.call(smembers,that.client,object_key+':'+field_name,function(err,child_ids){
+			j.call(smembers,that._get_client(),object_key+':'+field_name,function(err,child_ids){
 				_.each(child_ids,function(child_id){
 					that._load(field.map,parseInt(child_id),j,function(child_obj){
 						obj[field_name].push(child_obj);
@@ -194,7 +227,7 @@ Mapper.prototype.load_all = function(map,callback) {
 		callback(loaded_obj_list);
 		return;
 	}
-	smembers(that.client,map.default_collection,function(err,obj_ids) {
+	smembers(that._get_client(),map.default_collection,function(err,obj_ids) {
 		var j = new Junction();
 		_.each(obj_ids,function(id){
 			

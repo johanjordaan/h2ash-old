@@ -10,6 +10,10 @@ Notes
 * If i can get the same functionality with less code then the less code option should win. This might mean less
   features but the base is more solid.
   
+ToDo
+=====
+* Have a look at what is the fastest way to get stuff into redis. hset or hsetall etc etc ...  
+  
 
 Usefull links
 =============
