@@ -1,24 +1,28 @@
 var _ = require('underscore');
 var Point2D = require('./point.js').Point2D; 
 
-var Vector2D = function(a,b,c,d) {
+// constructor rules
+//   x1,y1,x2,y1
+//   p1,p2
+//   ref
+//   { p1 : p , p2 : p ,p1_ref:true, p2_ref=false}
+
+// Empty constructor sets nothing, but as soon as one point is set the other is set to the default of 0,0 if its is not specified
+
+var Vector2D = function(dict) {
 	
 	if(arguments.length == 0) {					// Default empty constructor
-	} else if(arguments.length == 2) {			// Create copy of two points
-		this.p1 = new Point2D(a.x,a.y);
-		this.p2 = new Point2D(b.x,b.y);
+	} else if(arguments.length == 4){
+		this.p1 = new Point2D(arguments['0'],arguments['1']);
+		this.p2 = new Point2D(arguments['2'],arguments['3']);
 		this.init();
-	} else if(arguments.length == 3) {			// Create a ref of the points (add a thirt component as true to get a ref on construction)
-		if(c==true) {
-			this.set_r(a,b);
-		} 
-	}else {										// Create bthe points from components
-		this.p1 = new Point2D(a,b);
-		this.p2 = new Point2D(c,d);
-		this.init();
+	} else {
+		this.set(dict);
 	}
 }	
 
+
+// Calling init assumes that p1 and p2 both exist
 Vector2D.prototype.init = function() {
 	var that = this;
 
@@ -28,61 +32,56 @@ Vector2D.prototype.init = function() {
 	that._update_derived_values();
 }
 
-// Ref set
-//
-Vector2D.prototype.set_r = function(p1,p2) {
-    this.p1 = p1;
-	this.p2 = p2;
-	this.init();
-}
-Vector2D.prototype.set_p1_r = function(p1) {
-    this.p1 = p1;
-	this.init();
-}
-Vector2D.prototype.set_p2_r = function(p2) {
-    this.p2 = p2;
-	this.init();
+Vector2D.prototype.set = function(dict) {
+	if(!_.isUndefined(dict.p1) || !_.isUndefined(dict.p2)) {
+		if(!_.isUndefined(dict.p1)) {
+			if(!_.isUndefined(dict.p1_ref) && dict.p1_ref) {
+				this.p1 = dict.p1;
+			} else {
+				if(_.isUndefined(this.p1))
+					this.p1 = new Point2D(dict.p1.x,dict.p1.y);
+				else
+					this.p1.set_c(dict.p1.x,dict.p1.y);
+			}
+		}
+		if(!_.isUndefined(dict.p2)) {
+			if(!_.isUndefined(dict.p2_ref) && dict.p2_ref) {
+				this.p2 = dict.p2;
+			} else {
+				if(_.isUndefined(this.p2))
+					this.p2 = new Point2D(dict.p2.x,dict.p2.y);
+				else
+					this.p2.set_c(dict.p2.x,dict.p2.y);
+				
+			}
+		}
+	} else {
+		if(_.isUndefined(this.p1))
+			this.p1 = new Point2D({x:dict.x1,y:dict.y1});
+		else
+			this.p1.set({x:dict.x1,y:dict.y1});
+			
+		if(_.isUndefined(this.p2))
+			this.p2 = new Point2D({x:dict.x2,y:dict.y2});
+		else
+			this.p2.set({x:dict.x2,y:dict.y2});
+	}
+	
+	if(_.isUndefined(this.p1))
+		this.p1 = new Point2D(0,0);
+	if(_.isUndefined(this.p2))
+		this.p2 = new Point2D(0,0);
+		
+	this.init();	
 }
 
-
-// Set the components of the existing objects
-//
 Vector2D.prototype.set_c = function(x1,y1,x2,y2) {
-    this.p1.set_c(x1,y1);
+	this.p1.set_c(x1,y1);
 	this.p2.set_c(x2,y2);
 }
-Vector2D.prototype.set_p1_c = function(x1,y1) {
-    this.p1.set_c(x1,y1);
-}
-Vector2D.prototype.set_p2_c = function(x2,y2) {
-	this.p2.set_c(x2,y2);
-}
-
-// Default set from domain
-//
-Vector2D.prototype.set = function(p1,p2) {
-    this.p1.set(p1);
-	this.p2.set(p2);
-}
-Vector2D.prototype.set_p1 = function(p1) {
-    this.p1.set(p1);
-}
-Vector2D.prototype.set_p2 = function(p2) {
-    this.p2.set(p2);
-}
-
-
 
 Vector2D.prototype.translate = function(dx,dy) {
     this.p1.translate(dx,dy);
-    this.p2.translate(dx,dy);
-}
-
-Vector2D.prototype.translate_p1 = function(dx,dy) {
-    this.p1.translate(dx,dy);
-}
-
-Vector2D.prototype.translate_p2 = function(dx,dy) {
     this.p2.translate(dx,dy);
 }
 
