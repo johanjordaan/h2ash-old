@@ -37,7 +37,12 @@ describe('Point2D', function() {
 			assert_point_values(p, 20, 30 );
 			var p2 = new Point2D({source:p});
 			assert_point_values(p2, 20, 30 );
+        });
+		it('should create a new point with specified values (direct arguments)', function() {
+            var p = new Point2D(22,34);
+			assert_point_values(p, 22, 34 );
         })
+
 
     })
     describe('#set', function() {

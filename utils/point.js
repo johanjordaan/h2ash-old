@@ -4,6 +4,8 @@ var Point2D = function(dict) {
 	this.handlers = { on_change : [] };
 
 	if(arguments.length == 0) {
+	} else if(arguments.length == 2){
+		this.set_c(arguments['0'],arguments['1']);
 	} else {
 		this.set(dict);
 	}
