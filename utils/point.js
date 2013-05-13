@@ -1,13 +1,15 @@
 var _ = require('underscore');
 
-var Point2D = function(a,b) {
+var Point2D = function(dict) {
 	this.handlers = { on_change : [] };
 
 	if(arguments.length == 0) {
-	} else if(arguments.length==1){
-		this.set(a);
+		this.set_c(0,0);
 	} else {
-		this.set_c(a,b);
+		if(_.isUndefined(dict.x)) dict.x = 0;
+		if(_.isUndefined(dict.y)) dict.y = 0;
+		
+		this.set(dict);
 	}
 }
 Point2D.prototype.init = function() {
@@ -27,9 +29,22 @@ Point2D.prototype.set_c = function(x,y) {
     this.y = y;
 	this._call_handlers('on_change');
 }
-Point2D.prototype.set = function(p) {
-    this.x = p.x;
-    this.y = p.y;
+Point2D.prototype.set = function(dict) {
+	if(arguments.length == 0) return;
+
+    if(!_.isUndefined(dict.source)) {
+		this.x = dict.source.x;
+		this.y = dict.source.y;
+	} else {
+		if(!_.isUndefined(dict.x)) {
+			this.x = dict.x;
+		}
+
+		if(!_.isUndefined(dict.y)) {
+			this.y = dict.y;
+		}
+	}
+
 	this._call_handlers('on_change');
 }
 
