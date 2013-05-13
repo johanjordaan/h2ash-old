@@ -1,4 +1,8 @@
-var _ = require('underscore');
+if(typeof(require) == 'undefined') {
+} else {
+	_ = require('underscore');
+}
+
 
 var Point2D = function(dict) {
 	this.handlers = { on_change : [] };

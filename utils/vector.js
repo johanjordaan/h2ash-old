@@ -1,5 +1,9 @@
-var _ = require('underscore');
-var Point2D = require('./point.js').Point2D; 
+if(typeof(require) == 'undefined') {
+} else {
+	_ = require('underscore');
+	Point2D = require('./point.js').Point2D; 
+} 
+
 
 // constructor rules
 //   x1,y1,x2,y1
