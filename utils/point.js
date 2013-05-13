@@ -4,11 +4,7 @@ var Point2D = function(dict) {
 	this.handlers = { on_change : [] };
 
 	if(arguments.length == 0) {
-		this.set_c(0,0);
 	} else {
-		if(_.isUndefined(dict.x)) dict.x = 0;
-		if(_.isUndefined(dict.y)) dict.y = 0;
-		
 		this.set(dict);
 	}
 }

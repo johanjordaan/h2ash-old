@@ -6,24 +6,31 @@ var expect = require('chai').expect;
 
 var Point2D = require('../utils/point.js').Point2D
 
+var check = function(a,b) {
+	if(b=='undefined') 
+		assert.equal(typeof(a),b);
+	else	
+		assert.equal(a,b);
+}
+
 var assert_point_values = function(point,x,y) {
-    assert.equal(point.x,x);
-    assert.equal(point.y,y);
+    check(point.x,x);
+	check(point.y,y);
 }
 
 describe('Point2D', function() {
     describe('#constructor', function() {
         it('should create a new point with default values', function() {
             var p = new Point2D();
-			assert_point_values(p, 0, 0 );
+			assert_point_values(p, 'undefined', 'undefined' );
         })
 		it('should create a new point with specified values', function() {
             var p = new Point2D({x:10,y:10});
 			assert_point_values(p, 10, 10 );
 			var p2 = new Point2D({x:10});
-			assert_point_values(p2, 10, 0 );
+			assert_point_values(p2, 10, 'undefined' );
 			var p3 = new Point2D({y:10});
-			assert_point_values(p3, 0, 10 );
+			assert_point_values(p3, 'undefined', 10 );
         })
         it('should create a new point with the same values as the source point', function() {
             var p = new Point2D({x:20,y:30});
