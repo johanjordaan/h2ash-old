@@ -55,14 +55,41 @@ describe('Point2D', function() {
 
 
 	describe('update_movable_object',function() {
-		it('should move an object by the correct amount',function(){
-			var obj = { px:0,py:0,dx:100,dy:0,v:1,last_update:0 }
+		it('should rotate the object by the correct amount and in the right direction',function(){
+			var obj = { px:0,py:0,tx:100,ty:0,v:0,heading:0,av:1,last_update:0 }
 			movement.update_movable_object(obj,1000);
-			obj.px.should.equal(1);
+			obj.heading.should.equal(1);
+			movement.update_movable_object(obj,1000);
+			obj.heading.should.equal(2);
+			obj.tx = -100;
+			movement.update_movable_object(obj,1000);
+			obj.heading.should.equal(1);
+			movement.update_movable_object(obj,2000);
+			obj.heading.should.equal(359);
+			obj.tx = 100;
+			movement.update_movable_object(obj,1000);
+			obj.heading.should.equal(0);
 		});
+		it('should default to the target direction if the amount of time is large',function(){
+			var obj = { px:0,py:0,tx:100,ty:0,v:0,heading:0,av:1,last_update:0 }
+			movement.update_movable_object(obj,1000);
+			obj.heading.should.equal(1);
+			movement.update_movable_object(obj,1000);
+			obj.heading.should.equal(2);
+			obj.tx = -100;
+			movement.update_movable_object(obj,1000);
+			obj.heading.should.equal(1);
+			movement.update_movable_object(obj,2000);
+			obj.heading.should.equal(359);
+			obj.tx = 100;
+			movement.update_movable_object(obj,1000);
+			obj.heading.should.equal(0);
+		});
+		
+		
 
 		it('should move an object by the same amount in the same time independently of number of calls',function(){
-			var obj1 = { px:0,py:0,dx:100,dy:0,v:1,last_update:0 }
+		/*	var obj1 = { px:0,py:0,dx:100,dy:0,v:1,last_update:0 }
 			var obj2 = { px:0,py:0,dx:100,dy:0,v:1,last_update:0 }
 			
 			movement.update_movable_object(obj1,1000*10);
@@ -72,14 +99,14 @@ describe('Point2D', function() {
 			}	
 				
 			obj1.px.should.equal(10);
-			obj2.px.should.equal(10);
+			obj2.px.should.equal(10);*/
 		});
 		
-		/*it('should rotate an object by the correct amount',function(){
-			var obj = { px:0,py:0,dx:0,dy:0,v:0,last_update:0 }
-			movement.update_movable_object(obj,1000);
-			obj.px.should.equal(1);
-		});*/
+		it('should rotate an object by the correct amount',function(){
+			//var obj = { px:0,py:0,dx:0,dy:0,v:0,last_update:0 }
+			//movement.update_movable_object(obj,1000);
+			//obj.px.should.equal(1);
+		});
 
 	});
 
