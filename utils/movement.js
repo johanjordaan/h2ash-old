@@ -56,11 +56,20 @@ var update_movable_object = function(object,timestamp) {
 	object.last_update = timestamp;
 }
 
+var deg2rad = function(deg) { return deg*(Math.PI/180.); }
+var rad2deg = function(rad) { return rad*(180./Math.PI); }
 
+var calculate_angle_to_target = function(target_x,target_y){
+	var angle = rad2deg(Math.atan(target_y/target_x));
+	if(target_x>=0) return 90-angle;
+	if(target_x<0) return 270-angle;
+} 
 
 
 if(typeof module != 'undefined') {
     module.exports.update_movable_object = update_movable_object;
 	module.exports.getTimestamp = getTimestamp;
+	module.exports.calculate_angle_to_target = calculate_angle_to_target;
+	
 } else {
 }
