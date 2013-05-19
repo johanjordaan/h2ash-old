@@ -1,6 +1,21 @@
 h2ash
 =====
 
+Guiding principles
+==================
+Use dictionaries and functions that work on these dictionaries.
+  - This allows for code to be shared between the FE and BE and *simple* JSON transport
+  
+
+Milestone 1:
+============
+Website with method to create a new object at the BE.
+BE to persist the item to the DB
+FE to update movement of object client side
+FE to synch with BE
+
+
+
 Notes
 ======
 * Caught by this vs that again

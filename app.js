@@ -18,7 +18,8 @@ app.configure(function(){
   app.use(express.session());
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
-  app.use(express.static(path.join(__dirname, 'models')));
+  app.use(express.static(path.join(__dirname, 'views')));
+  app.use(express.static(path.join(__dirname, 'utils')));
 });
 
 app.configure('development', function(){
