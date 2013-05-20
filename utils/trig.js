@@ -11,11 +11,11 @@ var rad2deg = function(rad) { return rad*(180./Math.PI); }
 // r is always > 0
 
 var c2p = function(x,y) {
-	return [Math.sqrt(x*x + y*y),Math.atan2(y,x)];	// [r,theta]
+	return {r:Math.sqrt(x*x + y*y),theta:Math.atan2(y,x)}
 } 
 
 var p2c = function(r,theta) {
-	return [r*Math.cos(theta),r*Math.sin(theta)]; 	// [x,y]
+	return {x:r*Math.cos(theta),y:r*Math.sin(theta)}; 	// [x,y]
 }
 
 var min_angle_between = function(theta1,theta2) {

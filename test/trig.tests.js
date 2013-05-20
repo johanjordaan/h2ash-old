@@ -62,7 +62,7 @@ describe('min_angle_between',function(){
 		trig.rad2deg(min_angle).should.be.within(0-float_error,0+float_error);
 		
 		// The below case fails but that is ok. I dont want to introduce the overhead 
-		// of handling it Maybee handling it in the conversion is the answer 
+		// of handling it Maybee handling it in the conversion is the answer? 
 		//min_angle = trig.min_angle_between(trig.deg2rad(0),trig.deg2rad(720));
 		//trig.rad2deg(min_angle).should.be.within(0-float_error,0+float_error);
 	});
