@@ -1,27 +1,28 @@
-extends ../layout
+extends layout
 
 block scripts
-	script(src='movement.js')
-	script(src='/main/main.js')
+	script(src='trig.js')
+	script(src='object.js')
+	script(src='main.js')
 
 block content
-	//-h1= title
-	//-p Welcome to The Main Page #{title}
-
+	p
+		i #{user_name}/#{email}
+	
 	div#slider
 		input#slide(type='range',min='5',max='200',step='5')
 
 	canvas#my_canvas(width='640',height='480')	
 		
-	hr
+	//-hr
 	
 	//-a.btn.btn-primary(href="#create_dialogue",role="button",data-toggle="modal") Create
 	//-a#post_test.btn.btn-primary Post
 	//-a#update.btn Update
 	
-	div 
-		table#myTable.table.table-condensed
-			tbody
+	//-div 
+	//-	table#myTable.table.table-condensed
+	//-		tbody
 			
 	div#create_dialogue.modal.hide.fade(role='dialog',tabindex='-1',aria-hidden='true',aria-labelledby='myModalLabel')
 		div.modal-header

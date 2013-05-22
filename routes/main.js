@@ -1,64 +1,48 @@
-var movement = require('../utils/movement.js');
+var object = require('../utils/object.js');
 
 module.exports = function(app) {
 	this.app = app;
   
 	this.main = function(req, res){
-		res.render('main/main', { title: 'Main Page' });
+		res.render('main', { user_name:req.session.user_name,email:req.session.email });
 	};  
-
   
-	var ship = {
-		id : 1,
-		px : 100,
-		py : 100,
-		tx : 100,
-		ty : 100,
-		v  : 0,
-		heading : 0,
-		av : 1,
-		last_update : movement.getTimestamp()
-	};
-	this.set_position = function(id,parms) {
-		ship.px = parms.x;
-		ship.py = parms.y;
-		ship.last_update = new Date();
-		//console.log(ship)
-	}
+	var ship = object.create(100,100,object.getTimestamp());
 	this.set_target = function(id,parms) {
-		ship.tx = parms.x;
-		ship.ty = parms.y;
-		ship.v = parms.v;
+		object.set_target(ship,parms.x,parms.y,object.getTimestamp());
 	}
-	
+	this.set_velocity = function(id,parms) {
+		object.set_velocity(ship,parms.v,object.getTimestamp());
+	}
+	this.set_angular_velocity = function(id,parms) {
+		object.set_velocity(ship,parms.av,object.getTimestamp());
+	}
   
 	var data = [ship];
 
-	var last = movement.getTimestamp();
+	var last = object.getTimestamp();
 	this.list_objects = function(req, res){
-		var ts = movement.getTimestamp();
-		movement.update_movable_object(ship,ts);
+		var ts = object.getTimestamp();
+		object.update(ship,ts);
+		//console.log(ship);
 		last = ts;
 		res.json(data);
 	};  
 
 	this.call_function_on_object = function(req,res) {
-		movement.update_movable_object(ship,movement.getTimestamp());
-		//console.log(req.params.source+"--"+req.params.action);
-		console.log(req.body.p)
-		this[req.params.action](req.params.source,req.body.p);
-		//p.actions[req.params.action].start()
-		//console.log(ship);
+		// Need to convert source to req.params.source to owner's ship
+		this[req.params.action](ship,req.body.p);
 		res.json(ship);
 	}
   
+	auth = function(req,res,next) {
+		if(req.session.logged_in == true) return next();
+		res.redirect('/');	
+	}
     
-  this.app.get('/main', this.main);
-  //this.app.post('/main/object2d', this.create_thing);	// Update
-  //this.app.put('/main/object2d', this.create_thing);	// Create
-  this.app.get('/main/objects', this.list_objects);		// List
-  
-  this.app.post('/main/object/:source/:action', this.call_function_on_object);	// Update
+	this.app.get('/main',auth, this.main);
+	this.app.get('/main/objects',auth, this.list_objects);
+	this.app.post('/main/object/:source/:action',auth,this.call_function_on_object);
  
 }
 

@@ -1,0 +1,17 @@
+extends layout
+
+block scripts
+	script(src='index.js')
+
+block content
+	h1= title
+	p Welcome to #{title}
+
+	div#alerts.alert(hidden='true') 
+		strong Warning! 
+		span#alert_message
+	
+	div.form-inline
+		input#email(type='text',placeholder='email')
+		input#password(type='password',placeholder='password')
+		button#login_btn.btn Sign in
