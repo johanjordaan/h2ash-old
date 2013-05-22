@@ -1,16 +1,16 @@
-var Player = require('../models/player.js').Player;
-
 var player_map = {
 	model_name	: 'Player',
+	id_field    : 'email',
 	fields		: {
 		email		: { type:'Simple', default_value:'' },
-		password	: { type:'Simple', default_value:'' },
+		name		: { type:'Simple', default_value:'' },
+		password	: { type:'Simple', default_value:'' }
 	},
 	default_collection	: 'Players'
 }
 
 if(typeof module != 'undefined') {
-    module.exports.point_map = point_map;
+    module.exports.player_map = player_map;
 } else {
-    alert('point_map.js is not for FE');
+    alert('player_map.js is not for FE');
 }
