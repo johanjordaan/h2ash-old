@@ -1,4 +1,5 @@
 if(typeof(require) == 'undefined') {
+	trig = this;
 } else {
 	_ = require('underscore');
 	trig = require('../utils/trig');
@@ -41,10 +42,20 @@ var create = function(x,y,timestamp) {
 
 var set_target = function(object,t_x,t_y,timestamp) {
 	update(object,timestamp);
-	var pc = trig.c2p(t_x-object.p_x,t_y-object.p-y);
+	var pc = trig.c2p(t_x-object.p_x,t_y-object.p_y);
 	object.t_r = pc.r;
 	object.t_theta = pc.theta;
-	object.last_update = timestamp;
+}
+
+var set_velocity = function(object,v,timestamp) {
+	update(object,timestamp);
+	object.v = v;
+}
+
+// Av is in degrees
+var set_angular_velocity = function(object,av,timestamp) {
+	update(object,timestamp);
+	object.av = trig.deg2rad(av);
 }
 
 var very_small = 0.000001;
@@ -53,23 +64,33 @@ var update = function(object,timestamp) {
     // Calculate the amount of seconds elapsed since the the last update
     //
     var delta_t = (timestamp - object.last_update)/1000;
-
+	//console.log('------');
+	//console.log('delta_t : '+delta_t);
+	
 	// Calculate the difference in angle between the heading and the target 
 	// direction
 	//
 	var angle_diff = trig.min_angle_between(object.heading,object.t_theta);
+	//console.log('object.t_theta : '+object.t_theta);
+	//console.log('object.heading : '+object.heading);
+	//console.log('angle_diff : '+angle_diff);
 
 	// Calculate the angular displacement in the time given
 	//
 	var delta_angle = delta_t * object.av;
-
+	//console.log('delta_angle : '+delta_angle);
+	
 	// Update the heading with the angular displacement or set the heading to
-	// be the same as the target direction
+	// be the same as the target direction : Need to get rid of these abs's
+	// inefficient ....?
 	//
-	if(delta_angle>angle_diff || angle_diff<very_small) {
+	if(Math.abs(delta_angle)>Math.abs(angle_diff) || Math.abs(angle_diff)<very_small) {
 		object.heading = object.t_theta;
 	} else {
-		object.heading = object.heading + delta_angle;
+		if(angle_diff>0)
+			object.heading = object.heading + delta_angle;
+		else
+			object.heading = object.heading - delta_angle;
 	}	
 	
 	// Calculate the linear displacement in the given time and clamp it to the
@@ -171,7 +192,12 @@ var update = function(object,timestamp) {
 
 if(typeof module != 'undefined') {
 	module.exports.create = create;
-	module.exports.getTimestamp = getTimestamp;
+	module.exports.set_target = set_target;
+	module.exports.set_velocity = set_velocity;
+	module.exports.set_angular_velocity = set_angular_velocity;
 	module.exports.update = update;
+	
+	module.exports.getTimestamp = getTimestamp;
+
 } else {
 }
