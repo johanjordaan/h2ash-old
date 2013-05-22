@@ -95,9 +95,13 @@ Mapper.prototype.save = function(map,obj,callback) {
 	var all_objects = that._all(map,obj)
 	_.each(all_objects,function(current_object) {
 		if(current_object.obj.id == -1) {
-			j.call(incr,that._get_client(),current_object.map.model_name,function(err,id){
-				current_object.obj.id = id;
-			});
+			if(_.isUndefined(map.id_field)) {
+				j.call(incr,that._get_client(),current_object.map.model_name,function(err,id){
+					current_object.obj.id = id;
+				});
+			} else {
+				current_object.obj.id = current_object.obj[map.id_field];
+			}
 		}
 	});
 	j.finalise(function() {

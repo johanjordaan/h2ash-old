@@ -20,6 +20,17 @@ var Mapper = require('../utils/mapper.js').Mapper;
 //
 // NOTE : To ref a map it must be defined before reffing. This also forces you to think about recoursive definitions
 
+var user_map = {
+	model_name 	: 'User',
+	id_field	: 'email',
+	fields 	: {
+		email	: { type:'Simple', default_value:'*email*' },
+		name 	: { type:'Simple', default_value:'*name*' },
+		password: { type:'Simple', default_value:'*password*' }
+	},
+	default_collection : 'Banks'
+}
+
 var bank_map = {
 	model_name	: 'Bank',		
 	fields 	: {
@@ -300,6 +311,23 @@ describe('Mapper', function() {
 					done();
 				});
 			});
+		});
+		
+		it('should use the provided field as the id insetad of the default id',function(done) {
+			var mapper = new Mapper(debug_db);
+			var initial_data = {email:'djjordaan@gmail.com',name:'Johan',password:'123'};
+			var u = mapper.create(user_map,initial_data);
+			mapper.save(user_map,u,function(saved_user){
+				saved_user.id.should.equal(initial_data.email);
+				mapper.load(user_map,initial_data.email,function(loaded_user){
+					loaded_user.id.should.equal(initial_data.email);
+					loaded_user.name.should.equal(initial_data.name);
+					loaded_user.password.should.equal(initial_data.password);
+					done();
+				});
+			});
+			
+			
 		});
 	});
 })
