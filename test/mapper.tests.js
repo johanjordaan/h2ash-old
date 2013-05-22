@@ -20,6 +20,8 @@ var Mapper = require('../utils/mapper.js').Mapper;
 //
 // NOTE : To ref a map it must be defined before reffing. This also forces you to think about recoursive definitions
 
+// Need to build in a chack that id_field is a valid field
+
 var user_map = {
 	model_name 	: 'User',
 	id_field	: 'email',
@@ -28,7 +30,7 @@ var user_map = {
 		name 	: { type:'Simple', default_value:'*name*' },
 		password: { type:'Simple', default_value:'*password*' }
 	},
-	default_collection : 'Banks'
+	default_collection : 'Users'
 }
 
 var bank_map = {
