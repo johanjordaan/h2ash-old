@@ -28,7 +28,6 @@ app.configure('development', function(){
 
 require('./routes/index.js')(app);
 require('./routes/main.js')(app);
-require('./routes/thing_routes.js')(app);
 
 http.createServer(app).listen(app.get('port'), function(){
   fs.writeFile('pid.txt',process.pid, function(err) {
