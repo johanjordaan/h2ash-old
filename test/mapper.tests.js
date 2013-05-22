@@ -9,35 +9,6 @@ var printf = require('../utils/printf.js').printf
 var Mapper = require('../utils/mapper.js').Mapper;
 
 
-// Test Domain Objects
-//
-var Person = function(name,surname,age,contact_details) {
-    this.name = name;
-	this.surname = surname;
-	this.age = age;	
-	this.contact_details = contact_details;
-	this.extra_contact_details = contact_details;
-    this.accounts = [];
-}
-
-var Account = function(type,bank) {
-	this.bank = bank;
-    this.type = type;
-}
-
-var Bank = function(name) {
-	this.name = name;
-}
-Bank.prototype.init = function() {
-	this.derived_name = this.name;	
-}
-
-var ContactDetails = function(cel_no,tek_no,email) {
-	this.cel_no = cel_no;
-	this.tel_no = tek_no;
-	this.email = email;
-}
-
 // Test maps
 //
 // Field : type - List for list of objects
@@ -50,7 +21,6 @@ var ContactDetails = function(cel_no,tek_no,email) {
 // NOTE : To ref a map it must be defined before reffing. This also forces you to think about recoursive definitions
 
 var bank_map = {
-	model 		: Bank,
 	model_name	: 'Bank',		
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
@@ -59,7 +29,6 @@ var bank_map = {
 }
 
 var contact_details_map = {
-	model 		: ContactDetails,
 	model_name	: 'ContactDetails',		
 	fields 	: {
 		cel_no 	 : { type:'Simple', default_value:'*cel_no*' },
@@ -69,17 +38,15 @@ var contact_details_map = {
 }
 
 var bank_map_with_init = {
-	model 		: Bank,
 	model_name	: 'Bank',
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
 	},
-	call_after_load : ['init'],
+	call_after_load : [],
 	default_collection : 'Banks'
 }
 
 var account_map = {
-	model 		: Account,
 	model_name	: 'Account',	
 	fields	: {
 		type 	: { type:'Simple', default_value:'*type*' },
@@ -89,7 +56,6 @@ var account_map = {
 };
 
 var person_map = {
-	model		: Person,
     model_name 	: 'Person',
     fields 	: {
 		name 	 		: { type:'Simple', default_value:'*name*' },
@@ -139,28 +105,20 @@ describe('Mapper', function() {
 			p.accounts.should.be.a('Array');
 			p.accounts.should.have.length(0);
 		});
-		it('should create a new object by using the constructor with the given parameters',function() {
-			var mapper = new Mapper();
-			var initial_values = {name:'Construction Bank'};
-			var b = mapper.create(bank_map_with_init,initial_values);
-			b.name.should.equal(initial_values.name);
-			b.derived_name.should.equal(initial_values.name);
-		});
 	});
 	describe('#_all',function() {
 		it('should list the unsaved objects in the tree',function() {
 			var mapper = new Mapper(debug_db);
 			var p = mapper.create(person_map);
-			var us = mapper._all(p);
+			var us = mapper._all(person_map,p);
 			us.length.should.equal(3);
 			var b = mapper.create(bank_map);
 			var a = mapper.create(account_map,{bank:b});
 			p.accounts.push(a);
-			var us = mapper._all(p);
+			var us = mapper._all(person_map,p);
 			us.length.should.equal(5);
 		});
 	});
-
 	describe('#save/#load',function() {
 		beforeEach(function(done) { 
 			var client = redis.createClient();
@@ -177,7 +135,7 @@ describe('Mapper', function() {
 			var a = mapper.create(account_map,{bank:b});
 			p.accounts.push(a);
 			p.name = 'Johan';
-			mapper.save(p,function(saved_person) { 
+			mapper.save(person_map,p,function(saved_person) { 
 				saved_person.name.should.equal('Johan');
 				mapper.load(person_map,1,function(loaded_person){
 					loaded_person.name.should.equal('Johan');
@@ -189,7 +147,7 @@ describe('Mapper', function() {
 			var mapper = new Mapper(debug_db);
 			var initial_data = {name:'The Best Bank'};
 			var b = mapper.create(bank_map,initial_data);
-			mapper.save(b,function(saved_bank){
+			mapper.save(bank_map,b,function(saved_bank){
 				saved_bank.id.should.equal(1);
 				mapper.load(bank_map,1,function(loaded_bank){
 					loaded_bank.id.should.equal(1);
@@ -206,7 +164,7 @@ describe('Mapper', function() {
 			var b1 = mapper.create(bank_map,initial_data_1);
 			var b2 = mapper.create(bank_map,initial_data_2);
 			
-			mapper.save_all([b1,b2],function(saved_banks) {
+			mapper.save_all(bank_map,[b1,b2],function(saved_banks) {
 				saved_banks.length.should.equal(2);
 				saved_banks[0].id.should.equal(1);
 				saved_banks[1].id.should.equal(2);
@@ -217,7 +175,6 @@ describe('Mapper', function() {
 			});
 		});
 		
-
 		it('should save a ref to any new objects to the collection specified in the map',function(done) {
 			var mapper = new Mapper(debug_db);
 			var initial_data_1 = {name:'The Best Bank'};
@@ -225,7 +182,7 @@ describe('Mapper', function() {
 			var b1 = mapper.create(bank_map,initial_data_1);
 			var b2 = mapper.create(bank_map,initial_data_2);
 
-			mapper.save_all([b1,b2],function(saved_banks){
+			mapper.save_all(bank_map,[b1,b2],function(saved_banks){
 				saved_banks.length.should.equal(2);
 				mapper.load_all(bank_map,function(loaded_banks){
 					loaded_banks.length.should.equal(2);
@@ -242,10 +199,10 @@ describe('Mapper', function() {
 			var b = mapper.create(bank_map,bank_initial_data);
 			var a = mapper.create(account_map,account_initial_data);
 
-			mapper.save(b,function(saved_bank){
+			mapper.save(bank_map,b,function(saved_bank){
 				b.id.should.equal(1);
 				a.bank = b;
-				mapper.save(a,function(saved_account) {
+				mapper.save(account_map,a,function(saved_account) {
 					mapper.load(account_map,1,function(loaded_account){
 						loaded_account.id.should.equal(1);
 						loaded_account.type.should.equal(account_initial_data.type);
@@ -256,7 +213,6 @@ describe('Mapper', function() {
 				});
 			})
 		});
-
 		it('should save/load a object with a list field',function(done) {
 			var mapper = new Mapper(debug_db);
 			var bank_initial_data = {name:'The Best Bank'};
@@ -269,13 +225,13 @@ describe('Mapper', function() {
 			var cc = mapper.create(account_map,cc_account_initial_data);
 			var p = mapper.create(person_map,person_initial_data);
 			
-			mapper.save(b,function(saved_bank){
+			mapper.save(bank_map,b,function(saved_bank){
 				b.id.should.equal(1);
 				sa.bank = b;
 				cc.bank = b;
 				p.accounts.push(sa);
 				p.accounts.push(cc);
-				mapper.save(p,function() {
+				mapper.save(person_map,p,function() {
 					mapper.load(person_map,1,function(loaded_person){
 						loaded_person.id.should.equal(1);
 						loaded_person.name.should.equal(person_initial_data.name);
@@ -287,13 +243,18 @@ describe('Mapper', function() {
 				});
 			})
 		});
-		
+
 		it('should load an object and call the constructor if constructor args are specified',function(done) {
 			var mapper = new Mapper(debug_db);
 			var bank_initial_data = {name:'The Best Bank'};
 			var b = mapper.create(bank_map_with_init,bank_initial_data);
 			
-			mapper.save(b,function(saved_bank){
+			var init = function(obj) {
+				obj.derived_name = obj.name;
+			}
+			bank_map_with_init.call_after_load = [init];
+			
+			mapper.save(bank_map,b,function(saved_bank){
 				b.id.should.equal(1);
 				b.name.should.equal(bank_initial_data.name);
 				mapper.load(bank_map_with_init,1,function(loaded_bank){
@@ -304,11 +265,11 @@ describe('Mapper', function() {
 				});
 			})
 		});
-		
+
 		it('should save all internal ref fields as their own objects',function(done) {
 			var mapper = new Mapper(debug_db);
 			var p = mapper.create(person_map);
-			mapper.save(p,function(saved_person) {
+			mapper.save(person_map,p,function(saved_person) {
 				p.contact_details.id.should.not.equal(p.extra_contact_details.id);
 				mapper.load(person_map,1,function(loaded_person){
 					loaded_person.contact_details.id.should.not.equal(loaded_person.extra_contact_details.id);
@@ -318,7 +279,6 @@ describe('Mapper', function() {
 			})
 		});
 		
-		
 		it('should throw an exception if id or map is not provided',function() {
 			var mapper = new Mapper(debug_db);
 			var fn = function() { mapper.load(); }
@@ -327,12 +287,11 @@ describe('Mapper', function() {
 			expect(fn2).to.throw("ID not provided for load.");
 		});
 
-		
 		it('should use the conversion function when specified on loading',function(done) {
 			var mapper = new Mapper(debug_db);
 			var p = mapper.create(person_map);
 			p.age = 22;
-			mapper.save(p,function(saved_person) {
+			mapper.save(person_map,p,function(saved_person) {
 				p.contact_details.id.should.not.equal(p.extra_contact_details.id);
 				mapper.load(person_map,1,function(loaded_person){
 					loaded_person.contact_details.id.should.not.equal(loaded_person.extra_contact_details.id);

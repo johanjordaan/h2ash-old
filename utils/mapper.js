@@ -7,23 +7,16 @@ var util = require('util');
 
 // Redis wrappers
 //
-var incrCount = 0;
-var hsetCount = 0;
-var saddCount = 0;
-
 var incr = function(client,name,callback) {
-	incrCount++;
 	client.incr(name,callback);	
 }
 var hset = function(client,key,field,val,callback) {
-    hsetCount++;
 	client.hset(key,field,val,callback);
 }
 var hget = function(client,key,field,callback) {
 	client.hget(key,field,callback);
 }
 var sadd = function(client,key,val,callback) {
-	saddCount++;
     client.sadd(key,val,callback);
 }
 var smembers = function(client,key,callback) {
@@ -75,21 +68,20 @@ Mapper.prototype.quit = function() {
 	_.each(this.clients,function(client){
 		client.quit();
 	});
-	printf('incr:%s,hset:%s,sadd:%s\n',incrCount,hsetCount,saddCount);
 }
 
 
-Mapper.prototype._all = function(obj,stack) {
+Mapper.prototype._all = function(map,obj,stack) {
 	var that = this;
 	if(_.isUndefined(stack)) stack = [];
-	stack.push(obj);
+	stack.push({obj:obj,map:map});
 
-	_.each(obj.map.fields,function(field,field_name) {
+	_.each(map.fields,function(field,field_name) {
 		if(field.type == 'Ref') {
-			that._all(obj[field_name],stack);
+			that._all(field.map,obj[field_name],stack);
 		} else if(field.type == 'List') {
 			_.each(obj[field_name],function(child) {
-				that._all(child,stack);
+				that._all(field.map,child,stack);
 			});
 		}
 	});	
@@ -97,14 +89,14 @@ Mapper.prototype._all = function(obj,stack) {
 	return stack;
 } 
 
-Mapper.prototype.save = function(obj,callback) {
+Mapper.prototype.save = function(map,obj,callback) {
 	var that = this;
 	var j = new Junction();
-	var all_objects = that._all(obj)
-	_.each(all_objects,function(current_item) {
-		if(current_item.id == -1) {
-			j.call(incr,that._get_client(),current_item.map.model_name,function(err,id){
-				current_item.id = id;
+	var all_objects = that._all(map,obj)
+	_.each(all_objects,function(current_object) {
+		if(current_object.obj.id == -1) {
+			j.call(incr,that._get_client(),current_object.map.model_name,function(err,id){
+				current_object.obj.id = id;
 			});
 		}
 	});
@@ -112,40 +104,38 @@ Mapper.prototype.save = function(obj,callback) {
 		var j2 = new Junction();
 		
 		_.each(all_objects,function(current_object){
-			var object_key = current_object.map.model_name+':'+current_object.id;
+			var object_key = current_object.map.model_name+':'+current_object.obj.id;
 			_.each(current_object.map.fields,function(field,field_name){
-			
 				if(field.type == 'Simple') {
-					j2.call(hset,that._get_client(),object_key,field_name,current_object[field_name],function(){});
+					j2.call(hset,that._get_client(),object_key,field_name,current_object.obj[field_name],function(){});
 				} else if(field.type == 'Ref') {
-					j2.call(hset,that._get_client(),object_key,field_name,current_object[field_name].id,function(){});
+					j2.call(hset,that._get_client(),object_key,field_name,current_object.obj[field_name].id,function(){});
 				} else if(field.type == 'List') {
-					_.each(current_object[field_name],function(child){
+					_.each(current_object.obj[field_name],function(child){
 						j2.call(sadd,that._get_client(),object_key+':'+field_name,child.id,function() {});
 					});
 				}
 			});
 			
 			if(!_.isUndefined(current_object.map.default_collection)) {
-				j2.call(sadd,that._get_client(),current_object.map.default_collection,current_object.id);	
+				j2.call(sadd,that._get_client(),map.default_collection,current_object.obj.id);	
 			}
 		});
 		
 		j2.finalise(function(){
 			callback(obj);
 		});
-		
 	});
 }
 
-Mapper.prototype.save_all = function(obj_list,callback) {
+Mapper.prototype.save_all = function(map,obj_list,callback) {
 	var that = this;
 	
 	var saved_obj_list = [];
 	var j = new Junction();
 	
 	_.each(obj_list,function(obj) { 
-		j.call(that,'save',obj,function(obj) {
+		j.call(that,'save',map,obj,function(obj) {
 			saved_obj_list.push(obj);
 		});
 	});
@@ -161,9 +151,9 @@ Mapper.prototype._load = function(map,id,j,callback) {
     
     var obj = this.create(map);
     obj.id = id;
- 
-     _.each(obj.map.fields,function(field,field_name) {
-		var object_key = obj.map.model_name+':'+obj.id;
+	var object_key = map.model_name+':'+obj.id;
+	
+     _.each(map.fields,function(field,field_name) {
 		if(field.type == 'Simple') {
 			j.call(hget,that._get_client(),object_key,field_name,function(err,val){
 				if(!_.isUndefined(field.conversion))
@@ -203,14 +193,14 @@ Mapper.prototype.load = function(map,id,callback) {
 		j.finalise(function(){
 			// Call the constructor for each class that requires it to be called
 			//
-			_.each(that._all(obj),function(current_obj){
+			_.each(that._all(map,obj),function(current_obj){
 				_.each(current_obj.map.call_after_load,function(after_load_func) {
-					current_obj[after_load_func]();
+					after_load_func(current_obj.obj);
 				});
 			});
 			callback(obj);
 		});
-	});
+	}); 
 }
 
 Mapper.prototype.load_all = function(map,callback) {
@@ -237,14 +227,13 @@ Mapper.prototype.load_all = function(map,callback) {
 
 Mapper.prototype.create = function(map,initial_data) {
 	var that = this;
-	var new_obj = construct(map.model).using.parameters();
+	var new_obj = {};
     new_obj.id = -1;
-	new_obj.map = map;
 
 	if(_.isUndefined(initial_data))
 		initial_data = {};
 	
-	_.each(new_obj.map.fields, function(field_def,field_name) {
+	_.each(map.fields, function(field_def,field_name) {
 		if(field_name in initial_data)
 			new_obj[field_name] = initial_data[field_name];
 		else {
@@ -259,13 +248,6 @@ Mapper.prototype.create = function(map,initial_data) {
 		}
 	});
 
-	// TODO - Inefficient : Called twice for loaded from db classes 
-	// Find a way to reduce this inefficiency
-	//
-	_.each(new_obj.map.call_after_load,function(after_load_func) {
-		new_obj[after_load_func]();
-	});
-		
     return new_obj;
 } 
 
