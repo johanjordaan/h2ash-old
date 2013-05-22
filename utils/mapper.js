@@ -94,13 +94,13 @@ Mapper.prototype.save = function(map,obj,callback) {
 	var j = new Junction();
 	var all_objects = that._all(map,obj)
 	_.each(all_objects,function(current_object) {
-		if(current_object.obj.id == -1) {
-			if(_.isUndefined(map.id_field)) {
+		if(_.isUndefined(current_object.obj.id) || current_object.obj.id == -1) {
+			if(_.isUndefined(current_object.map.id_field)) {
 				j.call(incr,that._get_client(),current_object.map.model_name,function(err,id){
 					current_object.obj.id = id;
 				});
 			} else {
-				current_object.obj.id = current_object.obj[map.id_field];
+				current_object.obj.id = current_object.obj[current_object.map.id_field];
 			}
 		}
 	});
@@ -122,7 +122,7 @@ Mapper.prototype.save = function(map,obj,callback) {
 			});
 			
 			if(!_.isUndefined(current_object.map.default_collection)) {
-				j2.call(sadd,that._get_client(),map.default_collection,current_object.obj.id);	
+				j2.call(sadd,that._get_client(),current_object.map.default_collection,current_object.obj.id,function() {});	
 			}
 		});
 		
