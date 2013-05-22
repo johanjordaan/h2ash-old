@@ -3,7 +3,7 @@ var player_map = {
 	id_field    : 'email',
 	fields		: {
 		email		: { type:'Simple', default_value:'' },
-		name		: { type:'Simple', default_value:'' },
+		user_name	: { type:'Simple', default_value:'' },
 		password	: { type:'Simple', default_value:'' }
 	},
 	default_collection	: 'Players'

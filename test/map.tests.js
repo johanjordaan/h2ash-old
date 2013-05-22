@@ -9,6 +9,8 @@ var Mapper = require('../utils/mapper.js').Mapper;
 var point_map = require('../maps/point_map').point_map;
 var vector_map = require('../maps/vector_map').vector_map;
 
+var Point2D = require('../utils/point.js').Point2D;
+
 var debug_db = 15;
 
 describe('vector_map',function() {
@@ -28,7 +30,7 @@ describe('vector_map',function() {
 		v.p2.x.should.equal(point_map.fields.x.default_value);
 		v.p2.y.should.equal(point_map.fields.y.default_value);
 
-		v.set_p2(10,10);
+		v.set(new Point2D(0,0),new Point2D(10,10));
 		
 		mapper.save(v,function(saved_v){
 			mapper.load(vector_map,1,function(loaded_v){
