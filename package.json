@@ -12,6 +12,7 @@
     "mocha": "*",
     "chai": "*",
     "should": "*",
+	"hiredis" : "*",
     "redis" : "*"
   }
 }
