@@ -9,11 +9,11 @@ var rad2deg = function(rad) { return rad*(180./Math.PI); }
 
 // theta in radians relative to x axis - counter clockwise
 // r is always > 0
-
+// Cartesian to polar
 var c2p = function(x,y) {
 	return {r:Math.sqrt(x*x + y*y),theta:Math.atan2(y,x)}
 } 
-
+//polar to cartesian
 var p2c = function(r,theta) {
 	return {x:r*Math.cos(theta),y:r*Math.sin(theta)}; 	// [x,y]
 }
