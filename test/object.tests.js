@@ -13,6 +13,8 @@ describe('create',function() {
 		var obj = object.create(10,20,0);
 		obj.p_x.should.equal(10);
 		obj.p_y.should.equal(20);
+		obj.t_x.should.equal(10);
+		obj.t_y.should.equal(20);
 		obj.v.should.equal(0);
 		obj.heading.should.equal(Math.PI/2);
 		obj.av.should.equal(0);
@@ -29,6 +31,8 @@ describe('set_target',function() {
 		object.set_target(obj,100,100,0);
 		obj.p_x.should.equal(10);
 		obj.p_y.should.equal(10);
+		obj.t_x.should.equal(100);
+		obj.t_y.should.equal(100);
 		obj.v.should.equal(0);
 		obj.heading.should.equal(Math.PI/2);
 		obj.av.should.equal(0);
@@ -44,6 +48,8 @@ describe('set_velocity',function() {
 		object.set_velocity(obj,50,0);
 		obj.p_x.should.equal(10);
 		obj.p_y.should.equal(10);
+		obj.t_x.should.equal(10);
+		obj.t_y.should.equal(10);
 		obj.v.should.equal(50);
 		obj.heading.should.equal(Math.PI/2);
 		obj.av.should.equal(0);
@@ -59,6 +65,8 @@ describe('set_angular_velocity',function() {
 		object.set_angular_velocity(obj,30,0);
 		obj.p_x.should.equal(10);
 		obj.p_y.should.equal(10);
+		obj.t_x.should.equal(10);
+		obj.t_y.should.equal(10);
 		obj.v.should.equal(0);
 		obj.heading.should.equal(Math.PI/2);
 		obj.av.should.equal(trig.deg2rad(30));

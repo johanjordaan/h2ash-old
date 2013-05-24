@@ -34,17 +34,27 @@ var create = function(x,y,timestamp) {
 		v			:0,
 		heading		:Math.PI/2,
 		av			:0,
+		t_x			:x,
+		t_y			:y,
 		t_r			:0,
 		t_theta 	:Math.PI/2,
 		last_update	:timestamp
 	};
 }
 
-var set_target = function(object,t_x,t_y,timestamp) {
-	update(object,timestamp);
-	var pc = trig.c2p(t_x-object.p_x,t_y-object.p_y);
+var _update_target_variables = function(object){
+	if(object.p_x == object.t_x && object.p_y == object.t_y) return;
+	var pc = trig.c2p(object.t_x-object.p_x,object.t_y-object.p_y);
 	object.t_r = pc.r;
 	object.t_theta = pc.theta;
+}
+
+var set_target = function(object,t_x,t_y,timestamp) {
+	update(object,timestamp);
+	
+	object.t_x = t_x;
+	object.t_y = t_y;
+	_update_target_variables(object);
 }
 
 var set_velocity = function(object,v,timestamp) {
@@ -112,6 +122,12 @@ var update = function(object,timestamp) {
 	var c_coords = trig.p2c(delta_r,object.heading);
 	object.p_x += c_coords.x;
 	object.p_y += c_coords.y;
+	
+	
+	// Reset the target r and theta
+	//
+	_update_target_variables(object);
+	
 	object.last_update = timestamp;
 	
 	
