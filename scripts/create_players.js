@@ -8,8 +8,8 @@ var object = require('../utils/object.js');
 var mapper = new Mapper();
 
 var players = [
-	{email:'Johan',user_name:'Johan',password:'123',ship:object.create(100,100,object.getTimestamp())},
-	{email:'Lorraine',user_name:'Lorraine',password:'321',ship:object.create(300,100,object.getTimestamp())},
+	{email:'Johan',user_name:'Johan',password:'123',ship:object.create(100,-100,object.getTimestamp())},
+	{email:'Lorraine',user_name:'Lorraine',password:'321',ship:object.create(300,-100,object.getTimestamp())},
 ];
 
 // Maybee later used for password hashing
