@@ -58,7 +58,7 @@ var set_angular_velocity = function(object,av,timestamp) {
 	object.av = trig.deg2rad(av);
 }
 
-var very_small = 0.000001;
+var very_small = 0.00000001;
 
 var update = function(object,timestamp) {
     // Calculate the amount of seconds elapsed since the the last update
@@ -71,8 +71,8 @@ var update = function(object,timestamp) {
 	// direction
 	//
 	var angle_diff = trig.min_angle_between(object.heading,object.t_theta);
-	//console.log('object.t_theta : '+object.t_theta);
-	//console.log('object.heading : '+object.heading);
+	//console.log('object.t_theta : '+trig.rad2deg(object.t_theta));
+	//console.log('object.heading : '+trig.rad2deg(object.heading));
 	//console.log('angle_diff : '+angle_diff);
 
 	// Calculate the angular displacement in the time given
@@ -84,6 +84,7 @@ var update = function(object,timestamp) {
 	// be the same as the target direction : Need to get rid of these abs's
 	// inefficient ....?
 	//
+	//console.log(trig.rad2deg(angle_diff));
 	if(Math.abs(delta_angle)>Math.abs(angle_diff) || Math.abs(angle_diff)<very_small) {
 		object.heading = object.t_theta;
 	} else {
@@ -92,6 +93,11 @@ var update = function(object,timestamp) {
 		else
 			object.heading = object.heading - delta_angle;
 	}	
+	if(object.heading<0)
+		object.heading += 2*Math.PI;
+	if(object.heading>2*Math.PI)
+		object.heading -= 2*Math.PI;
+	
 	
 	// Calculate the linear displacement in the given time and clamp it to the
 	// distance to the target.
@@ -104,9 +110,10 @@ var update = function(object,timestamp) {
 	// the offset values.
 	//
 	var c_coords = trig.p2c(delta_r,object.heading);
-	object.px += c_coords.x;
-	object.py += c_coords.y;
+	object.p_x += c_coords.x;
+	object.p_y += c_coords.y;
 	object.last_update = timestamp;
+	
 	
 	/*
 	

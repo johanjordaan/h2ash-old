@@ -90,7 +90,7 @@ describe('update',function(){
 		obj.last_update.should.equal(0);
 	});
 	
-	it('XXX should rotate the object by the correct amount and in the right direction (located at zero)',function(){
+	it('should rotate the object by the correct amount and in the right direction (located at zero)',function(){
 		var obj = object.create(0,0,0);
 		object.set_target(obj,100,0,0);
 		object.set_angular_velocity(obj,1,0);
@@ -108,6 +108,47 @@ describe('update',function(){
 		object.update(obj,5000);	// 2seconds
 		obj.heading.should.equal(trig.deg2rad(91));
 	});
+	
+	it('should rotate the object by the correct amount and in the right direction (actual screen simulation)',function(){
+		var obj = object.create(100,-100,0);
+		object.set_target(obj,200,-200,0);
+		object.set_angular_velocity(obj,1,0);
+
+		// Clockwise
+		object.update(obj,1000);
+		obj.heading.should.equal(trig.deg2rad(89));
+		object.update(obj,2000);
+		obj.heading.should.equal(trig.deg2rad(88));
+		object.update(obj,1000*1000);
+		obj.heading.should.equal(trig.deg2rad(360-45));
+		
+		// Anticlockwise
+		object.set_target(obj,200,0,1000*1000);
+		object.update(obj,1000*1001);
+		obj.heading.should.equal(trig.deg2rad(360-44));
+		object.update(obj,1000*2000);
+		obj.heading.should.equal(trig.deg2rad(45));
+	});
+
+	it('should set the heading to the target if the diff between the two is very small',function(){
+		var obj = object.create(100,-100,0);
+		object.set_target(obj,100.000001,0,0);
+		object.set_angular_velocity(obj,1,0);
+
+		// Clockwise
+		object.update(obj,1000);
+		obj.heading.should.equal(obj.t_theta);
+		object.update(obj,3000);
+		obj.heading.should.equal(obj.t_theta);
+		
+		// Anticlockwise
+		object.set_target(obj,100,0,3000);
+		object.update(obj,4000);
+		obj.heading.should.equal(obj.t_theta);
+	});
+
+	
+	
 	
 });	
 	
