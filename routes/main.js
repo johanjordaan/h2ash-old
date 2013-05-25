@@ -52,7 +52,6 @@ module.exports = function(app) {
 		// Need to convert source to req.params.source to owner's ship
 		// Do it via session.req.ship ? or player.ship etc ...
 		mapper.load(player_map,req.session.email,function(player){
-			console.log(req.body.p);
 			that[req.params.action](player.ship,req.body.p);
 			res.json(player.ship);
 		});
