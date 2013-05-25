@@ -32,7 +32,7 @@ module.exports = function(app) {
 	}
 	this.set_velocity = function(ship,parms) {
 		object.set_velocity(ship,Number(parms.v),object.getTimestamp());
-		mapper.save(object_map,ship,function(saved){ console.log('-----');console.log(saved);  });
+		mapper.save(object_map,ship,function(saved){ });
 	}
 	this.set_angular_velocity = function(ship,parms) {
 		object.set_angular_velocity(ship,Number(parms.av),object.getTimestamp());
