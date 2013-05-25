@@ -116,7 +116,7 @@ var update = function(object,timestamp) {
 	if(delta_r>object.t_r)
 		delta_r = object.t_r;
 	
-	// Conevrt the heading/delta_r to cartesian coordinates. These coordinates are
+	// Convert the heading/delta_r to cartesian coordinates. These coordinates are
 	// the offset values.
 	//
 	var c_coords = trig.p2c(delta_r,object.heading);
