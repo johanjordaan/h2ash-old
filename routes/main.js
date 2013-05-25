@@ -15,10 +15,10 @@ var update = function() {
 			mapper.save(object_map,current_object,function(obj){ });
 		});
 		//process.nextTick(update);
-		setTimeout(update,3000);
+		setTimeout(update,100);
 	});
 }
-setTimeout(update,3000);
+setTimeout(update,100);
 
 
 module.exports = function(app) {
@@ -27,15 +27,15 @@ module.exports = function(app) {
 	};  
   
 	this.set_target = function(ship,parms) {
-		object.set_target(ship,parms.x,parms.y,object.getTimestamp());
+		object.set_target(ship,Number(parms.x),Number(parms.y),object.getTimestamp());
 		mapper.save(object_map,ship,function(saved){  });
 	}
 	this.set_velocity = function(ship,parms) {
-		object.set_velocity(ship,parms.v,object.getTimestamp());
-		mapper.save(object_map,ship,function(saved){  });
+		object.set_velocity(ship,Number(parms.v),object.getTimestamp());
+		mapper.save(object_map,ship,function(saved){ console.log('-----');console.log(saved);  });
 	}
 	this.set_angular_velocity = function(ship,parms) {
-		object.set_angular_velocity(ship,parms.av,object.getTimestamp());
+		object.set_angular_velocity(ship,Number(parms.av),object.getTimestamp());
 		mapper.save(object_map,ship,function(saved){  });
 	}
   
@@ -52,6 +52,7 @@ module.exports = function(app) {
 		// Need to convert source to req.params.source to owner's ship
 		// Do it via session.req.ship ? or player.ship etc ...
 		mapper.load(player_map,req.session.email,function(player){
+			console.log(req.body.p);
 			that[req.params.action](player.ship,req.body.p);
 			res.json(player.ship);
 		});

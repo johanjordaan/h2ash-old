@@ -7,9 +7,15 @@ var object = require('../utils/object.js');
 
 var mapper = new Mapper();
 
+var ship1 = object.create(100,-100,object.getTimestamp());
+ship1.id = 1;
+var ship2 = object.create(300,-100,object.getTimestamp());
+ship2.id = 2;
+
+
 var players = [
-	{email:'Johan',user_name:'Johan',password:'123',ship:object.create(100,-100,object.getTimestamp())},
-	{email:'Lorraine',user_name:'Lorraine',password:'321',ship:object.create(300,-100,object.getTimestamp())},
+	{email:'Johan',user_name:'Johan',password:'123',ship:ship1},
+	{email:'Lorraine',user_name:'Lorraine',password:'321',ship:ship2},
 ];
 
 // Maybee later used for password hashing

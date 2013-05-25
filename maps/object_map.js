@@ -3,6 +3,8 @@ var object_map = {
 	fields		: {
 		p_x			: { type:'Simple', default_value:0, conversion:Number },
 		p_y			: { type:'Simple', default_value:0, conversion:Number },
+		t_x			: { type:'Simple', default_value:0, conversion:Number },
+		t_y			: { type:'Simple', default_value:0, conversion:Number },
 		v			: { type:'Simple', default_value:0, conversion:Number },
 		heading		: { type:'Simple', default_value:0, conversion:Number },
 		av			: { type:'Simple', default_value:0, conversion:Number },
