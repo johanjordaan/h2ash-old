@@ -9,32 +9,18 @@ block content
 	p
 		i #{user_name}/#{email}
 	
-	//-div#slider
-	//-	input#slide(type='range',min='5',max='200',step='5')
-
-	//input#velocity
-	//button#set_velocity.btn(type='button') Set Velocity
-	//input#angular_velocity
-	//button#set_angular_velocity.btn(type='button') Set Angular Velocity
-		
 	div 
 		span#heading 
 		|
 		span#velocity
-	//div.progress.progress-warning
-	//	div#velocity.bar(style="width: 60%")
+		|
+		span#world_x
+		|
+		span#world_y
 		
 	canvas#my_canvas(width='640',height='480')	
 		
-	//-hr
-	
 	//-a.btn.btn-primary(href="#create_dialogue",role="button",data-toggle="modal") Create
-	//-a#post_test.btn.btn-primary Post
-	//-a#update.btn Update
-	
-	//-div 
-	//-	table#myTable.table.table-condensed
-	//-		tbody
 			
 	div#create_dialogue.modal.hide.fade(role='dialog',tabindex='-1',aria-hidden='true',aria-labelledby='myModalLabel')
 		div.modal-header

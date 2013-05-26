@@ -153,10 +153,12 @@ var update_objects = function(time) {
 	_.each(ships,function(ship){
 		update(ship,time);
 	});
-	if(!_.isUndefined(my_ship))
+	if(!_.isUndefined(my_ship)){
 		$('#heading').html(rad2deg(my_ship.heading).toFixed(1));
 		$('#velocity').html(my_ship.v.toFixed(1));
-	
+		$('#world_x').html(world_x.toFixed(1));
+		$('#world_y').html(world_y.toFixed(1));
+	}
 }
 
 var world_x = 0;
@@ -234,8 +236,10 @@ $(function() {
 	
 	$('#my_canvas').dblclick(function(e) {
 		var coords = clickEventToElementCoordinates(this,e);
-		set_target(my_ship,coords.x+world_x,-1*coords.y + world_y,getTimestamp());
-		$.post('/main/object/'+my_ship.id+'/set_target',{p:{x:coords.x+world_x,y:-1*coords.y+world_y}},function(data,textStatus,jqXHR){  
+		set_target(my_ship,coords.x-world_x,-1*(coords.y - world_y),getTimestamp());
+		console.log(coords);
+		
+		$.post('/main/object/'+my_ship.id+'/set_target',{p:{x:coords.x-world_x,y:-1*(coords.y-world_y)}},function(data,textStatus,jqXHR){  
 		});
 		return true;
 	});
