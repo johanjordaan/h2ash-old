@@ -22,6 +22,25 @@ var sync = function(f) {
 	})
 }
 
+var celestials = [
+	{p_x:0,p_y:0},
+]
+
+
+var drawCelestial = function(x,y) {
+	context.save();
+	context.strokeStyle = 'yellow';
+
+	context.beginPath();
+	context.translate(x+world_x,-1*y+world_y);
+	context.arc(x,y,10,0,2*Math.PI,false);
+	context.closePath();
+	context.stroke();
+	context.restore();	
+	
+}
+
+
 var drawObject = function(x,y,angle,color) {
 	context.save();
 	context.strokeStyle = color;
@@ -104,6 +123,11 @@ var render = function(time) {
 			
 		drawObject(ship.p_x,ship.p_y,ship.heading,color);
 	});
+	
+	_.each(celestials,function(celestial){
+		drawCelestial(celestial.p_x,celestial.p_y);
+	});
+	
 }
 
 var update_objects = function(time) {
@@ -210,8 +234,8 @@ $(function() {
 	
 	$('#my_canvas').dblclick(function(e) {
 		var coords = clickEventToElementCoordinates(this,e);
-		set_target(my_ship,coords.x,-1*coords.y,getTimestamp());
-		$.post('/main/object/'+my_ship.id+'/set_target',{p:{x:coords.x,y:-1*coords.y}},function(data,textStatus,jqXHR){  
+		set_target(my_ship,coords.x+world_x,-1*coords.y + world_y,getTimestamp());
+		$.post('/main/object/'+my_ship.id+'/set_target',{p:{x:coords.x+world_x,y:-1*coords.y+world_y}},function(data,textStatus,jqXHR){  
 		});
 		return true;
 	});
@@ -220,6 +244,6 @@ $(function() {
 		var coords = clickEventToElementCoordinates(this,e);
 		
 		
-	}
+	});
 	
 });
