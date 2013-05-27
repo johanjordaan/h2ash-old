@@ -1,0 +1,73 @@
+if(typeof(require) == 'undefined') {
+} else {
+	_ = require('underscore');
+}
+
+var Mock = function(methods) {
+	var that = this;		
+	that.methods = {};			// { func : { method_name:'func',mock_func:some_func,call_count:0 } }
+	that.expected_calls = []; 	// List of {method_name:'func',expected_args:[],callback:callback}
+	that.actual_calls = []; 	// List of {method_name:'func',actual_args:[]}
+		
+	_.each(methods,function(method_name){
+		that._add_method(method_name);
+	});
+	
+}
+Mock.prototype._add_method = function(method_name) {
+	var that = this;
+	if(!_.has(that.methods,method_name)) {
+		that.methods[method_name] = { 
+			method_name:method_name,
+			mock_func:function() {
+				that.methods[method_name].call_count++;
+			},
+			call_count:0 
+		};
+		that[method_name] = that.methods[method_name].mock_func;
+	}
+}
+
+
+Mock.prototype.expect = function(method_name,expected_args,callback) {
+	var that = this;		
+	that._add_method(method_name);
+	that.expected_calls.push({method_name:method_name,expected_args:expected_args,callback:callback});
+		
+	that.methods[method_name].mock_func = function() {
+		var args = Array.prototype.slice.call(arguments, 0);
+		if(!_.isUndefined(callback))
+			callback();
+		that.actual_calls.push({method_name:method_name,actual_args:args});
+		that.methods[method_name].call_count++;
+	}
+	that[method_name] = that.methods[method_name].mock_func;
+}
+
+Mock.prototype.validate = function() {
+	var that = this;		
+	var ret_val = {status:'ok',messages:[]};
+	_.each(that.expected_calls,function(expected_call,call_index) {
+		var actual_call = that.actual_calls[call_index];
+		if(expected_call.method_name == actual_call.method_name ) {
+			_.each(expected_call.expected_args,function(expected_arg,arg_index){
+				var actual_arg = actual_call.actual_args[arg_index];
+				// Need to handle lists and objects ...
+				if(expected_arg == actual_arg) {
+				} else {
+					ret_val.messages.push('Expected argument ['+arg_index+'] on call ['+expected_call.method_name+'] to be ['+expected_arg+'] but actually was ['+actual_arg+']');
+				}
+			});
+		} else {
+			ret_val.messages.push('Expected call ['+excpected_call.method_name+'] but actual call was ['+actual_call.method_name+']');
+		}
+	});
+	if(ret_val.messages.length>0)
+		ret_val.status = 'error'
+	return ret_val;
+}
+
+if(typeof module != 'undefined') {
+	module.exports.Mock = Mock;
+} else {
+}
