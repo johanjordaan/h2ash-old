@@ -22,10 +22,39 @@ var sync = function(f) {
 	})
 }
 
+var createPing = function(x,y) {
+	return {
+		p_x:x,
+		p_y:y,
+		step_size:3,
+		max_steps:100,
+		current_step:3,
+		gradients : ['gray','white','red']
+	};
+}
+
+var pings = [];
+
+var drawPing = function(ping) {
+	context.save();
+	
+	context.translate(ping.p_x+world_x,-1*ping.p_y+world_y);
+	
+	
+	_.each(ping.gradients,function(gradient,index) {
+		context.beginPath();	
+		context.strokeStyle = gradient;
+		context.arc(0,0,(ping.step_size)*ping.current_step-(ping.step_size*(3-index)),0,2*Math.PI,false);
+		context.stroke();
+	});
+	
+	
+	context.restore();	
+}
+
 var celestials = [
 	{p_x:0,p_y:0},
 ]
-
 
 var drawCelestial = function(x,y) {
 	context.save();
@@ -33,73 +62,43 @@ var drawCelestial = function(x,y) {
 
 	context.beginPath();
 	context.translate(x+world_x,-1*y+world_y);
-	context.arc(x,y,10,0,2*Math.PI,false);
-	context.closePath();
+	context.arc(0,0,100,0,2*Math.PI,false);
+//	context.closePath();
 	context.stroke();
 	context.restore();	
 	
 }
 
 
-var drawObject = function(x,y,angle,color) {
+var drawObject = function(x,y,angle,color,name) {
 	context.save();
 	context.strokeStyle = color;
 	
 	context.beginPath();
 	context.translate(x+world_x,-1*y+world_y);
 	
-	context.rotate(Math.PI/2 - angle);
-	context.moveTo(0,0);
-	context.lineTo(-10,0);
-	context.lineTo(0,-30);
-	context.lineTo(10,0);
-	context.lineTo(0,0);
-	context.closePath();
+	context.arc(0,0,2,0,2*Math.PI,false);
+	context.moveTo(3,3);
+	context.lineTo(6,6);
+	
+	
+	context.font = '11px Arial';
+	context.fillStyle = color;
+	context.fillText(name, 8, 5);
+	var metrics = context.measureText(name);
+	context.lineTo(6+metrics.width,6);
+	
+	
+	//context.rotate(Math.PI/2 - angle);
+	//context.moveTo(0,0);
+	//context.lineTo(-10,0);
+	//context.lineTo(0,-30);
+	//context.lineTo(10,0);
+	//context.lineTo(0,0);
+	
 	context.stroke();
 	context.restore();	
 }
-
-var clearCanvas = function() {
-	context.fillStyle = 'black';
-	context.fillRect(0, 0, canvas.width, canvas.height);	
-	drawGrid(world_x,world_y);
-}
-
-var drawGrid = function(world_x,world_y) {
-	context.save();
-	context.strokeStyle = '#505050';
-	//context.setLineDash([3,6]); /// Not supported in IE
-	
-	var size = 100;
-	var offset_x = world_x%size;
-	var offset_y = world_y%size;
-	
-	
-	
-	for(var r=0;r<canvas.height;r+=size) {
-		context.moveTo(0,r+offset_y);
-		context.lineTo(canvas.width,r+offset_y);
-	}
-	
-	for(var c=0;c<canvas.width;c+=size) {
-		context.moveTo(c+offset_x,0);
-		context.lineTo(c+offset_x,canvas.height);
-	}
-
-	//context.fillStyle = "#303030";
-	//context.font = "20px Arial";
-	//for(var r=0,rc=0;r<canvas.height;r+=size,rc++) {
-	//	for(var c=0,cc=0;c<canvas.width;c+=size,cc++) {
-	//		if(rc%5==0 && cc%5==0)
-	//			context.fillText('('+c+','+r+')', c+offset_x, r+offset_y);
-	//	}
-	//}
-
-	
-	
-	context.stroke();
-	context.restore();
-} 
 
 var clickEventToElementCoordinates = function(element,event) {
 	var offsetX = 0, offsetY = 0
@@ -114,19 +113,34 @@ var clickEventToElementCoordinates = function(element,event) {
 }
 
 var render = function(time) {
-	clearCanvas();
+	wc.clear();
+	wc.draw_grid(world_x,world_y,40);
 	
 	_.each(ships,function(ship){
 		var color = 'red';
 		if(ship.id == my_ship_id)
 			color = 'green';
 			
-		drawObject(ship.p_x,ship.p_y,ship.heading,color);
+		drawObject(ship.p_x,ship.p_y,ship.heading,color,'This is the ship name ...');
 	});
 	
 	_.each(celestials,function(celestial){
 		drawCelestial(celestial.p_x,celestial.p_y);
 	});
+	
+	var hitlist = [];
+	_.each(pings,function(ping,index){
+		if(ping.current_step<ping.max_steps) {
+			ping.current_step += ping.step_size;
+			drawPing(ping);
+		} else {
+			hitlist.push(index);	
+		}
+	});
+	_.each(hitlist,function(target){
+		pings.splice(target,1);
+	});
+	
 	
 }
 
@@ -159,10 +173,11 @@ var update_objects = function(time) {
 		$('#world_x').html(world_x.toFixed(1));
 		$('#world_y').html(world_y.toFixed(1));
 	}
+	
 }
 
-var world_x = 0;
-var world_y = 0;
+var world_x = 73;
+var world_y = 244;
 var scroll_up = false;
 var scroll_down = false;
 var scroll_left = false;
@@ -170,6 +185,7 @@ var scroll_right = false;
 var speed_up = false;
 var slow_down = false;
 
+var wc;
 //function updateProgress(selector,percentage){
 //    if(percentage > 100) percentage = 100;
 //    $(selector).css('width', percentage+'%');
@@ -180,6 +196,9 @@ $(function() {
 	canvas = $('#my_canvas')[0];
 	canvas.onselectstart = function () { return false; }	// This stops the double click from selecting text on the page
 	context = canvas.getContext('2d');
+	
+	wc = new WorldCanvas(canvas.width,canvas.height,context); 
+	
 	sync(function() {
 		var av = 20;
 		set_angular_velocity(my_ship,av,getTimestamp());
@@ -236,6 +255,8 @@ $(function() {
 	
 	$('#my_canvas').dblclick(function(e) {
 		var coords = clickEventToElementCoordinates(this,e);
+		pings.push(createPing(coords.x-world_x,-1*(coords.y - world_y)));
+
 		set_target(my_ship,coords.x-world_x,-1*(coords.y - world_y),getTimestamp());
 		console.log(coords);
 		
