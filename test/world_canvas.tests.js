@@ -22,6 +22,21 @@ describe('clear',function() {
 	});
 });
 
+describe('translate',function() {
+	it('should translate the camera x and y coordinates to the give location',function() { 
+		var context = new Mock();
+		var wc = new WorldCanvas(640,480,context);
+		wc.world_x.should.equal(0);
+		wc.world_y.should.equal(0);
+		wc.translate(10,10);
+		wc.world_x.should.equal(10);
+		wc.world_y.should.equal(10);
+		wc.translate(-20,10);
+		wc.world_x.should.equal(-10);
+		wc.world_y.should.equal(20);
+	});
+});
+
 
 describe('draw_grid',function() {
 	it('should draw a grid with the given dimesions',function() {
@@ -44,8 +59,35 @@ describe('draw_grid',function() {
 		}
 		
 		var wc = new WorldCanvas(10,10,context);	
-		wc.draw_grid(0,0,step);
+		wc.draw_grid(step);
 		
 		context.validate(true).status.should.equal('ok');
 	});
+	
+	// Need a test for world offset drawing
 })
+
+describe('draw_object',function() {
+	it('should draw an object with its lable at the correct spot on the canvas',function() { 
+		var context = new Mock(['save','restore','beginPath']);
+		
+		context.expect('translate',[10,-10]);
+		context.expect('arc',[0,0,100,0,2*Math.PI,false]);
+		context.expect('moveTo',[101,101]);
+		context.expect('lineTo',[106,106]);
+		context.expect('fillText',['The Object',106,101]);
+		context.expect('measureText',['The Object'],function(text){
+			return({width:10});
+		});
+		context.expect('lineTo',[116,106]);
+		context.expect('stroke',[],function(){
+			context.strokeStyle.should.equal('yellow');
+		});
+		
+		var wc = new WorldCanvas(100,100,context);	
+		wc.draw_object(10,10,100,'The Object','yellow');
+		context.validate(true).status.should.equal('ok');
+	});
+});
+
+
