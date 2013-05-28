@@ -44,26 +44,43 @@ Mock.prototype.expect = function(method_name,expected_args,callback) {
 	that[method_name] = that.methods[method_name].mock_func;
 }
 
-Mock.prototype.validate = function() {
+Mock.prototype.validate = function(display_messages) {
 	var that = this;		
 	var ret_val = {status:'ok',messages:[]};
+	
+	if(that.expected_calls.length>that.actual_calls.length)
+		ret_val.messages.push('Number of expected calls ['+that.expected_calls.length+'] exceeds number of actual calls ['+that.actual_calls.length+']')
+	
 	_.each(that.expected_calls,function(expected_call,call_index) {
-		var actual_call = that.actual_calls[call_index];
-		if(expected_call.method_name == actual_call.method_name ) {
-			_.each(expected_call.expected_args,function(expected_arg,arg_index){
-				var actual_arg = actual_call.actual_args[arg_index];
-				// Need to handle lists and objects ...
-				if(expected_arg == actual_arg) {
-				} else {
-					ret_val.messages.push('Expected argument ['+arg_index+'] on call ['+expected_call.method_name+'] to be ['+expected_arg+'] but actually was ['+actual_arg+']');
-				}
-			});
-		} else {
-			ret_val.messages.push('Expected call ['+excpected_call.method_name+'] but actual call was ['+actual_call.method_name+']');
+		if(call_index>=that.actual_calls.length) {
+			ret_val.messages.push('Expected call ['+expected_call.method_name+'] but no call was made');
+		} else {	
+			var actual_call = that.actual_calls[call_index];
+			if(expected_call.method_name == actual_call.method_name ) {
+				_.each(expected_call.expected_args,function(expected_arg,arg_index){
+					var actual_arg = actual_call.actual_args[arg_index];
+					// Need to handle lists and objects ...
+					if(expected_arg == actual_arg) {
+					} else {
+						ret_val.messages.push('Expected argument ['+arg_index+'] on call ['+expected_call.method_name+'] to be ['+expected_arg+'] but actually was ['+actual_arg+']');
+					}
+				});
+			} else {
+				ret_val.messages.push('Expected call ['+excpected_call.method_name+'] but actual call was ['+actual_call.method_name+']');
+			}
 		}
 	});
 	if(ret_val.messages.length>0)
 		ret_val.status = 'error'
+		
+	if(!_.isUndefined(display_messages) && display_messages==true) {
+		if(ret_val.status == 'error')
+			console.log('------------------');
+		_.each(ret_val.messages,function(message,index){
+			console.log(index+') '+message)
+		});
+	}
+		
 	return ret_val;
 }
 
