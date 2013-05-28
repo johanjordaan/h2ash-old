@@ -36,10 +36,12 @@ Mock.prototype.expect = function(method_name,expected_args,callback) {
 		
 	that.methods[method_name].mock_func = function() {
 		var args = Array.prototype.slice.call(arguments, 0);
+		var ret_val;
 		if(!_.isUndefined(callback))
-			callback();
+			ret_val = callback(arguments);
 		that.actual_calls.push({method_name:method_name,actual_args:args});
 		that.methods[method_name].call_count++;
+		return ret_val;
 	}
 	that[method_name] = that.methods[method_name].mock_func;
 }
@@ -66,7 +68,7 @@ Mock.prototype.validate = function(display_messages) {
 					}
 				});
 			} else {
-				ret_val.messages.push('Expected call ['+excpected_call.method_name+'] but actual call was ['+actual_call.method_name+']');
+				ret_val.messages.push('Expected call ['+expected_call.method_name+'] but actual call was ['+actual_call.method_name+']');
 			}
 		}
 	});
