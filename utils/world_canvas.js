@@ -46,7 +46,8 @@ WorldCanvas.prototype.draw_object = function(x,y,radius,label,color) {
 	this.context.translate(x+this.world_x,-1*y+this.world_y);
 	this.context.arc(0,0,radius,0,2*Math.PI,false);
 	
-	this.context.moveTo(radius+1,radius+1);
+	var label_start = Math.sqrt((radius*radius)/2);
+	this.context.moveTo(label_start+2,label_start+2);
 	this.context.lineTo(radius+6,radius+6);
 	this.context.font = '11px Arial';
 	this.context.fillStyle = color;

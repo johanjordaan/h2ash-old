@@ -73,7 +73,8 @@ describe('draw_object',function() {
 		
 		context.expect('translate',[10,-10]);
 		context.expect('arc',[0,0,100,0,2*Math.PI,false]);
-		context.expect('moveTo',[101,101]);
+		var lable_xy = Math.sqrt((100*100)/2);
+		context.expect('moveTo',[lable_xy+2,lable_xy+2]);
 		context.expect('lineTo',[106,106]);
 		context.expect('fillText',['The Object',106,101]);
 		context.expect('measureText',['The Object'],function(text){
@@ -88,6 +89,8 @@ describe('draw_object',function() {
 		wc.draw_object(10,10,100,'The Object','yellow');
 		context.validate(true).status.should.equal('ok');
 	});
+	
+	// Need a test for offset drawing
 });
 
 

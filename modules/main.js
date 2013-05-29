@@ -14,7 +14,7 @@ var sync = function(f) {
 		_.each(ships,function(ship) {
 			if(ship.id == my_ship_id)
 				my_ship = ship;
-			ship.last_update = getTimestamp();
+			ship.last_update = getTimestamp();		// Reset the timestamp to FE rather than BE
 		});
 		
 		if(!_.isUndefined(f))
@@ -22,6 +22,7 @@ var sync = function(f) {
 	})
 }
 
+/*
 var createPing = function(x,y) {
 	return {
 		p_x:x,
@@ -32,6 +33,7 @@ var createPing = function(x,y) {
 		gradients : ['gray','white','red']
 	};
 }
+
 
 var pings = [];
 
@@ -50,55 +52,11 @@ var drawPing = function(ping) {
 	
 	
 	context.restore();	
-}
+}*/
 
 var celestials = [
-	{p_x:0,p_y:0},
+	{p_x:0,p_y:0,color:'yellow',label:'sun'},
 ]
-
-var drawCelestial = function(x,y) {
-	context.save();
-	context.strokeStyle = 'yellow';
-
-	context.beginPath();
-	context.translate(x+world_x,-1*y+world_y);
-	context.arc(0,0,100,0,2*Math.PI,false);
-//	context.closePath();
-	context.stroke();
-	context.restore();	
-	
-}
-
-
-var drawObject = function(x,y,angle,color,name) {
-	context.save();
-	context.strokeStyle = color;
-	
-	context.beginPath();
-	context.translate(x+world_x,-1*y+world_y);
-	
-	context.arc(0,0,2,0,2*Math.PI,false);
-	context.moveTo(3,3);
-	context.lineTo(6,6);
-	
-	
-	context.font = '11px Arial';
-	context.fillStyle = color;
-	context.fillText(name, 8, 5);
-	var metrics = context.measureText(name);
-	context.lineTo(6+metrics.width,6);
-	
-	
-	//context.rotate(Math.PI/2 - angle);
-	//context.moveTo(0,0);
-	//context.lineTo(-10,0);
-	//context.lineTo(0,-30);
-	//context.lineTo(10,0);
-	//context.lineTo(0,0);
-	
-	context.stroke();
-	context.restore();	
-}
 
 var clickEventToElementCoordinates = function(element,event) {
 	var offsetX = 0, offsetY = 0
@@ -114,21 +72,24 @@ var clickEventToElementCoordinates = function(element,event) {
 
 var render = function(time) {
 	wc.clear();
-	wc.draw_grid(world_x,world_y,40);
+	wc.draw_grid(40);
 	
 	_.each(ships,function(ship){
-		var color = 'red';
 		if(ship.id == my_ship_id)
-			color = 'green';
-			
-		drawObject(ship.p_x,ship.p_y,ship.heading,color,'This is the ship name ...');
+			wc.draw_object(ship.p_x,ship.p_y,2,'My Ship','green');
+		else
+			wc.draw_object(ship.p_x,ship.p_y,2,'Some Other Ship','red');
+		
+		
+		//drawObject(ship.p_x,ship.p_y,ship.heading,color,'This is the ship name ...');
 	});
 	
 	_.each(celestials,function(celestial){
-		drawCelestial(celestial.p_x,celestial.p_y);
+		wc.draw_object(celestial.p_x,celestial.p_y,100,'Sun','yellow');
+		//drawCelestial(celestial.p_x,celestial.p_y);
 	});
 	
-	var hitlist = [];
+	/*var hitlist = [];
 	_.each(pings,function(ping,index){
 		if(ping.current_step<ping.max_steps) {
 			ping.current_step += ping.step_size;
@@ -139,16 +100,16 @@ var render = function(time) {
 	});
 	_.each(hitlist,function(target){
 		pings.splice(target,1);
-	});
+	});*/
 	
 	
 }
 
 var update_objects = function(time) {
-	if(scroll_up) world_y+=1;
-	if(scroll_down) world_y-=1;
-	if(scroll_left) world_x+=1;
-	if(scroll_right) world_x-=1;
+	if(scroll_up) wc.translate(0,1);
+	if(scroll_down)  wc.translate(0,-1);
+	if(scroll_left) wc.translate(1,0);
+	if(scroll_right) wc.translate(-1,0);
 	
 	var v = my_ship.v;
 	if(speed_up) {
@@ -170,14 +131,12 @@ var update_objects = function(time) {
 	if(!_.isUndefined(my_ship)){
 		$('#heading').html(rad2deg(my_ship.heading).toFixed(1));
 		$('#velocity').html(my_ship.v.toFixed(1));
-		$('#world_x').html(world_x.toFixed(1));
-		$('#world_y').html(world_y.toFixed(1));
+		$('#world_x').html(wc.world_x.toFixed(1));
+		$('#world_y').html(wc.world_y.toFixed(1));
 	}
 	
 }
 
-var world_x = 73;
-var world_y = 244;
 var scroll_up = false;
 var scroll_down = false;
 var scroll_left = false;
@@ -198,6 +157,7 @@ $(function() {
 	context = canvas.getContext('2d');
 	
 	wc = new WorldCanvas(canvas.width,canvas.height,context); 
+	wc.translate(73,244);
 	
 	sync(function() {
 		var av = 20;
@@ -255,12 +215,12 @@ $(function() {
 	
 	$('#my_canvas').dblclick(function(e) {
 		var coords = clickEventToElementCoordinates(this,e);
-		pings.push(createPing(coords.x-world_x,-1*(coords.y - world_y)));
+		//pings.push(createPing(coords.x-world_x,-1*(coords.y - world_y)));
 
-		set_target(my_ship,coords.x-world_x,-1*(coords.y - world_y),getTimestamp());
+		set_target(my_ship,coords.x-wc.world_x,-1*(coords.y - wc.world_y),getTimestamp());
 		console.log(coords);
 		
-		$.post('/main/object/'+my_ship.id+'/set_target',{p:{x:coords.x-world_x,y:-1*(coords.y-world_y)}},function(data,textStatus,jqXHR){  
+		$.post('/main/object/'+my_ship.id+'/set_target',{p:{x:coords.x-wc.world_x,y:-1*(coords.y-wc.world_y)}},function(data,textStatus,jqXHR){  
 		});
 		return true;
 	});
