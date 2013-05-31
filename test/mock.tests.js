@@ -20,6 +20,13 @@ describe('Mock',function() {
 			mock.methods['func_a'].call_count.should.equal(0);
 			mock.methods['func_b'].call_count.should.equal(0);
 		});
+		it('should convert an object to a mock',function() {
+			var source = {f1:function(){ this.val = 1; }, f2:function() { this.val =2;} }
+			var mock = new Mock(source);
+			mock.should.equal(source);
+			mock.expect.should.be.a('function');
+			mock.validate.should.be.a('function');
+		});
 	});
 	
 	describe('#expect',function(){
@@ -58,6 +65,24 @@ describe('Mock',function() {
 			v.messages.length.should.equal(1);
 			//console.log(v.messages);
 		})
+		it('should create an expectation for a method on a eixting object',function(){
+			var source = {f1:function(){ this.val = 1; }, f2:function() { this.val =2;} }
+			var mock = new Mock(source);
+			
+			mock.expect('f1',[],function(mock) { mock.val=10;});	
+			mock.expect('f2',[],function(mock) { mock.val=20;});	
+						
+			mock.f1();
+			
+			mock.methods['f1'].call_count.should.equal(1);
+			mock.val.should.equal(10);
+			
+			var v = mock.validate();
+			v.status.should.equal('error');
+			v.messages.length.should.equal(2);
+			//console.log(v.messages);
+		})
+
 	});
 	
 });

@@ -3,8 +3,19 @@ if(typeof(require) == 'undefined') {
 	_ = require('underscore');
 }
 
-var Mock = function(methods) {
-	var that = this;		
+var Mock = function(arg) {
+	var source,methods;
+	if(_.isArray(arg) || _.isUndefined(arg)) {
+		methods = arg;
+		source = this;
+	} else {
+		source = arg;
+		source._add_method = Mock.prototype._add_method;
+		source.expect = Mock.prototype.expect;
+		source.validate = Mock.prototype.validate;
+	}
+	
+	var that = source;		
 	that.methods = {};			// { func : { method_name:'func',mock_func:some_func,call_count:0 } }
 	that.expected_calls = []; 	// List of {method_name:'func',expected_args:[],callback:callback}
 	that.actual_calls = []; 	// List of {method_name:'func',actual_args:[]}
@@ -13,6 +24,7 @@ var Mock = function(methods) {
 		that._add_method(method_name);
 	});
 	
+	return source;
 }
 Mock.prototype._add_method = function(method_name) {
 	var that = this;
@@ -38,7 +50,7 @@ Mock.prototype.expect = function(method_name,expected_args,callback) {
 		var args = Array.prototype.slice.call(arguments, 0);
 		var ret_val;
 		if(!_.isUndefined(callback))
-			ret_val = callback(arguments);
+			ret_val = callback(that,arguments);
 		that.actual_calls.push({method_name:method_name,actual_args:args});
 		that.methods[method_name].call_count++;
 		return ret_val;
