@@ -4,21 +4,21 @@ if(typeof(require) == 'undefined') {
 }
 
 // All the inputs are in world coordinates
-var Camera = function(x,y,width,height) {
+var Camera = function(x,y,width,aspect_ratio) {
 	this.center_x = x;
 	this.center_y = y;
 	this.width = width;
-	this.height = height;
+	this.height = width/aspect_ratio;
 	this._calculate_left_top();	
 }
 
-Camera.prototype.Translate = function(dx,dy) {
+Camera.prototype.translate = function(dx,dy) {
 	this.center_x += dx;
 	this.center_y += dy;
 	this._calculate_left_top();
 }
 
-Camera.prototype.Scale = function(scale) {
+Camera.prototype.scale = function(scale) {
 	this.width*=scale;
 	this.height*=scale;
 	this._calculate_left_top();
