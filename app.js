@@ -21,6 +21,7 @@ app.configure(function(){
   app.use(express.static(path.join(__dirname, 'views')));
   app.use(express.static(path.join(__dirname, 'utils')));
   app.use(express.static(path.join(__dirname, 'modules')));
+  app.use(express.static(path.join(__dirname, 'fx')));
 });
 
 app.configure('development', function(){
