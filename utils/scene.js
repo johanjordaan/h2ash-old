@@ -12,9 +12,8 @@ var Scene = function(screen,camera) {
 
 Scene.prototype.render = function() {
 	var timestamp = time.get_timestamp();
-	var scale = this.screen.width/this.camera.width;
 	_.each(this.nodes,function(node,index){
-		node.render(scale,timestamp);
+		node.render(timestamp);
 	});
 }
 
