@@ -10,6 +10,7 @@ var Camera = function(x,y,width,aspect_ratio) {
 	this.width = width;
 	this.height = width/aspect_ratio;
 	this._calculate_left_top();	
+	this.magnification = 1;
 }
 
 Camera.prototype.translate = function(dx,dy) {
@@ -18,9 +19,10 @@ Camera.prototype.translate = function(dx,dy) {
 	this._calculate_left_top();
 }
 
-Camera.prototype.scale = function(scale) {
-	this.width*=scale;
-	this.height*=scale;
+Camera.prototype.scale = function(magnification) {
+	this.magnification = magnification;
+	this.width*=magnification;
+	this.height*=magnification;
 	this._calculate_left_top();
 }
 
