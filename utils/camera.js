@@ -4,33 +4,18 @@ if(typeof(require) == 'undefined') {
 }
 
 // All the inputs are in world coordinates
-var Camera = function(x,y,width,aspect_ratio) {
+// Scale -> meter/pixel if scale is 0.007848 then the earth (6371m radiums) will have a radius of 50px ... The sun
+// having radius of 700000 would have a radius of 5400px ... a bit to big for the screen :)
+var Camera = function(x,y,magnification) {
 	this.center_x = x;
 	this.center_y = y;
-	this.width = width;
-	this.height = width/aspect_ratio;
-	this._calculate_left_top();	
-	this.magnification = 1;
+	this.magnification = magnification;
 }
 
 Camera.prototype.translate = function(dx,dy) {
 	this.center_x += dx;
 	this.center_y += dy;
-	this._calculate_left_top();
 }
-
-Camera.prototype.scale = function(magnification) {
-	this.magnification = magnification;
-	this.width*=magnification;
-	this.height*=magnification;
-	this._calculate_left_top();
-}
-
-Camera.prototype._calculate_left_top = function() {
-	this.left_top_x = this.center_x - this.width/2;
-	this.left_top_y = this.center_y - this.height/2;	
-}
-
 
 if(typeof module != 'undefined') {
     module.exports.Camera = Camera;
