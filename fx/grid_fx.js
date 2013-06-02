@@ -4,13 +4,16 @@ if(typeof(require) == 'undefined') {
 }
 
 var GridFX = function(scene,parms) {
+	_.extend(this,new SceneNode());
+	scene.add_child_node(this);	
+	
 	this.scene = scene;
 
 	this.color = parms.color;
 	this.step = parms.step; 
 }
 
-GridFX.prototype.render = function(timestamp) {
+GridFX.prototype.render = function(parent,timestamp) {
 	var x_offset = (this.scene.camera.center_x*this.scene.camera.magnification - this.scene.screen.width/2)%this.step;
 	var y_offset = (this.scene.camera.center_y*this.scene.camera.magnification - this.scene.screen.height/2)%this.step;
 

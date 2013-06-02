@@ -107,8 +107,6 @@ $(function() {
 	scene = new Scene(screen,camera);
 
 	var grid = new GridFX(scene,{color:'#303030',step:40});
-	scene.nodes.push(grid);
-	
 	var sun = new PlanetFX(scene,{x:0,y:0,color:'yellow',radius:695500,label:'sun'});
 	var mercury = new PlanetFX(scene,{x:57910000,y:0,color:'brown',radius:2440,label:'mercury'});
 	var venus = new PlanetFX(scene,{x:108200000,y:0,color:'white',radius:6052,label:'venus'});
@@ -119,22 +117,6 @@ $(function() {
 	var saturn = new PlanetFX(scene,{x:1443000000,y:0,color:'orange',radius:58232,label:'saturn'});
 	var uranus = new PlanetFX(scene,{x:2877000000,y:0,color:'blue',radius:25362,label:'uranus'});
 	var neptune = new PlanetFX(scene,{x:4503000000,y:0,color:'blue',radius:25362,label:'neptune'});
-	
-	scene.nodes.push(sun);
-	scene.nodes.push(mercury);
-	scene.nodes.push(venus);
-	scene.nodes.push(earth);
-	scene.nodes.push(moon);
-	scene.nodes.push(mars);
-	scene.nodes.push(jupiter);
-	scene.nodes.push(saturn);
-	scene.nodes.push(uranus);
-	scene.nodes.push(neptune);
-	
-	
-	
-	
-
 
 	sync(function() {
 		var av = 20;
