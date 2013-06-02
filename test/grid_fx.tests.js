@@ -21,11 +21,11 @@ describe('GridFX',function() {
 			var camera = new Camera(14960000,0,0.007848062);
 			var scene = new Scene(screen,camera);
 			
-			var grid = new GridFX(scene,'gray',40);
+			var step = 40;
+			var grid = new GridFX(scene,{color:'gray',step:step});
 			
-//			var x_offset = this.scene.camera.center_x*this.scene.camera.magnification - this.scene.screen.width/2;
-//			var y_offset = this.scene.camera.center_y*this.scene.camera.magnification - this.scene.screen.height/2;
-			
+			var x_offset = camera.center_x*camera.magnification - screen.width/2;
+			var y_offset = camera.center_y*camera.magnification - screen.height/2;
 			
 			context.expect('stroke',[],function(){
 				context.strokeStyle.should.equal('gray');

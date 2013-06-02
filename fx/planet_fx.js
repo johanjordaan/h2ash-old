@@ -3,15 +3,15 @@ if(typeof(require) == 'undefined') {
 	_ = require('underscore');
 }
 
-var PlanetFX = function(scene,x,y,color,radius,label) {
+var PlanetFX = function(scene,parms) {
 	this.scene = scene;
 
-	this.x = x;
-	this.y = y;
+	this.x = parms.x;
+	this.y = parms.y;
 
-	this.color = color;
-	this.radius = radius; 
-	this.label = label;
+	this.color = parms.color;
+	this.radius = parms.radius; 
+	this.label = parms.label;
 }
 
 PlanetFX.prototype.render = function(timestamp) {

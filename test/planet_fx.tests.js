@@ -21,7 +21,7 @@ describe('PlanetFX',function() {
 			var camera = new Camera(14960000,0,0.007848062);	// Should reduce radius to 50
 			var scene = new Scene(screen,camera);
 			
-			var earth = new PlanetFX(scene,14960000,0,'blue',6371,'earth');
+			var earth = new PlanetFX(scene,{x:14960000,y:0,color:'blue',radius:6371,label:'earth'});
 						
 			context.expect('translate',[Math.floor((14960000*0.007848062) - (14960000*0.007848062-320)),240]);
 			context.expect('arc',[0,0,50,0,2*Math.PI,false]);
