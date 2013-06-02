@@ -1,9 +1,13 @@
 if(typeof(require) == 'undefined') {
 } else {
 	_ = require('underscore');
+	SceneNode = require('../utils/scene.js').SceneNode;
 }
 
 var PlanetFX = function(scene,parms) {
+	_.extend(this,new SceneNode());
+	scene.add_child_node(this);	
+	
 	this.scene = scene;
 
 	this.x = parms.x;
@@ -14,7 +18,7 @@ var PlanetFX = function(scene,parms) {
 	this.label = parms.label;
 }
 
-PlanetFX.prototype.render = function(timestamp) {
+PlanetFX.prototype.render = function(parent,timestamp) {
 	var radius = Math.floor(this.radius*this.scene.camera.magnification);
 	if(radius<2) radius = 2;
 	var x_offset = this.scene.camera.center_x*this.scene.camera.magnification - this.scene.screen.width/2;

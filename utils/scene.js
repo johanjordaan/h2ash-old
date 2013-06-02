@@ -1,23 +1,32 @@
 if(typeof(require) == 'undefined') {
 } else {
 	_ = require('underscore');
-	get_timestamp = require('../utils/time.js').get_timestamp;
 }
 
-var Scene = function(screen,camera) {
-	this.screen = screen;
-	this.camera = camera;
-	this.nodes = [];
+var SceneNode = function() {
+	this.children = [];
 }
-
-Scene.prototype.render = function() {
-	var timestamp = get_timestamp();
-	_.each(this.nodes,function(node,index){
-		node.render(timestamp);
+SceneNode.prototype.add_child_node = function(child) {
+	this.children.push(child);
+}
+SceneNode.prototype.render_children = function(parent,timestamp) {
+	_.each(this.children,function(child,index){
+		child.render(timestamp);
 	});
 }
 
+var Scene = function(screen,camera) {
+	_.extend(this,new SceneNode())
+	this.screen = screen;
+	this.camera = camera;
+}
+Scene.prototype.render = function(timestamp) {
+	this.render_children(this,timestamp);
+}
+
+
 if(typeof module != 'undefined') {
+	module.exports.SceneNode = SceneNode;
 	module.exports.Scene = Scene;
 } else {
 }

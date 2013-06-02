@@ -45,7 +45,7 @@ describe('PlanetFX',function() {
 				//context.strokeStyle.should.equal('gray');
 			});
 			
-			earth.render()
+			earth.render(scene,10)
 
 			context.validate(true).status.should.equal('ok');
 		});
