@@ -11,7 +11,7 @@ SceneNode.prototype.add_child_node = function(child) {
 }
 SceneNode.prototype.render_children = function(parent,timestamp) {
 	_.each(this.children,function(child,index){
-		child.render(timestamp);
+		child.render(parent,timestamp);
 	});
 }
 

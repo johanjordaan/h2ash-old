@@ -6,7 +6,11 @@ if(typeof(require) == 'undefined') {
 
 var PlanetFX = function(scene,parms) {
 	_.extend(this,new SceneNode());
-	scene.add_child_node(this);	
+	
+	if(_.isUndefined(parms.parent))
+		scene.add_child_node(this);	
+	else
+		parms.parent.add_child_node(this);
 	
 	this.scene = scene;
 
@@ -47,6 +51,8 @@ PlanetFX.prototype.render = function(parent,timestamp) {
 	this.scene.screen.context.stroke();
 	
 	this.scene.screen.context.restore();	
+	
+	this.render_children(this,timestamp)
 }
 
 if(typeof module != 'undefined') {
