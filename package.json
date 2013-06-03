@@ -13,6 +13,7 @@
     "chai": "*",
     "should": "*",
 	"hiredis" : "*",
-    "redis" : "*"
+    "redis" : "*",
+	"socket.io" : "*"
   }
 }
