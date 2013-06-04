@@ -32,4 +32,11 @@ if(typeof module != 'undefined') {
 	module.exports.p2c = p2c;
 	module.exports.min_angle_between = min_angle_between;
 } else {
+	trig = {
+		deg2rad:deg2rad,
+		rad2deg:rad2deg,
+		c2p:c2p,
+		p2c:p2c,
+		min_angle_between:min_angle_between
+	}
 }

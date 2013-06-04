@@ -16,4 +16,7 @@ var get_timestamp = function() {
 if(typeof module != 'undefined') {
 	module.exports.get_timestamp = get_timestamp;
 } else {
+	time = {
+		get_timestamp:get_timestamp	
+	};
 }
