@@ -229,20 +229,43 @@ Mapper.prototype.load_all = function(map,callback) {
 	});
 }
 
+Mapper.prototype.update = function(map,dest,source) {
+	var that = this;
+	if(_.isUndefined(source))
+		source = {};
+	
+	_.each(map.fields, function(field_def,field_name) {
+		if(field_name in source) {
+			if(field_def.type == 'Simple') {
+				if(_.isUndefined(field_def.conversion))
+					dest[field_name] = source[field_name];
+				else
+					dest[field_name] = field_def.conversion(source[field_name]);
+			} else if(field_def.type == 'List') {
+				_.each(source[field_name],function(item){
+					dest[field_name] = [];
+					dest[field_name].push(that.update(field_def.map,{},item));
+				});
+			} else if(field_def.type == 'Ref') {
+				dest[field_name] = that.update(field_def.map,{},source[field_name]);
+			}
+		} 
+	});
+	return dest;
+}
+
 Mapper.prototype.create = function(map,initial_data) {
 	var that = this;
 	var new_obj = {};
     new_obj.id = -1;
-
-	if(_.isUndefined(initial_data))
-		initial_data = {};
+	
+	this.update(map,new_obj,initial_data)
 	
 	_.each(map.fields, function(field_def,field_name) {
-		if(field_name in initial_data)
-			new_obj[field_name] = initial_data[field_name];
-		else {
+		if(field_name in new_obj) {
+		} else {
 			if(field_def.type == 'Simple') 
-				new_obj[field_name] = field_def.default_value;
+				new_obj[field_name] = field_def.default_value;		// Assuming that a conversion is not required for defaults
 			else if(field_def.type == 'List')
 				new_obj[field_name] = [];
 			else if(field_def.type == 'Ref') {
@@ -251,8 +274,8 @@ Mapper.prototype.create = function(map,initial_data) {
 			}
 		}
 	});
-
-    return new_obj;
+	
+	return new_obj;
 } 
 
 

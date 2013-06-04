@@ -119,6 +119,20 @@ describe('Mapper', function() {
 			p.accounts.should.have.length(0);
 		});
 	});
+	describe("#update",function(){
+		it('should extend the desination object based on the map and initial', function() {
+			var mapper = new Mapper();
+			var initial_values = {surname:'jordaan',age:'32',accounts:[{type:'Savings',bank:{name:"Standard Bank"}}]};	
+			var local_p = {};	
+			
+			mapper.update(person_map,local_p,initial_values);
+			
+			local_p.surname.should.equal(initial_values.surname);
+			local_p.age.should.equal(32);
+			local_p.accounts.should.be.a('Array');
+			local_p.accounts.should.have.length(1);
+		});
+	});
 	describe('#_all',function() {
 		it('should list the unsaved objects in the tree',function() {
 			var mapper = new Mapper(debug_db);
