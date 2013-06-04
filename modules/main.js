@@ -109,15 +109,15 @@ $(function() {
 	var grid = new GridFX(scene,{color:'#303030',step:40});
 	
 	var sun = new PlanetFX(scene,{x:0,y:0,color:'yellow',radius:695500,label:'sun'});
-	var mercury = new PlanetFX(scene,{x:57910000,y:0,color:'brown',radius:2440,label:'mercury'});
-	var venus = new PlanetFX(scene,{x:108200000,y:0,color:'white',radius:6052,label:'venus'});
-	var earth = new PlanetFX(scene,{x:149600000,y:0,color:'blue',radius:6371,label:'earth'});
+	var mercury = new PlanetFX(scene,{x:57910000,y:0,color:'brown',radius:2440,label:'mercury',parent:sun});
+	var venus = new PlanetFX(scene,{x:108200000,y:0,color:'white',radius:6052,label:'venus',parent:sun});
+	var earth = new PlanetFX(scene,{x:149600000,y:0,color:'blue',radius:6371,label:'earth',parent:sun});
 	var moon = new PlanetFX(scene,{x:384400,y:0,color:'gray',radius:1737,label:'moon',parent:earth});
-	var mars = new PlanetFX(scene,{x:227900000,y:0,color:'red',radius:3396,label:'mars'});
-	var jupiter = new PlanetFX(scene,{x:778500000,y:0,color:'orange',radius:69911,label:'jupiter'});
-	var saturn = new PlanetFX(scene,{x:1443000000,y:0,color:'orange',radius:58232,label:'saturn'});
-	var uranus = new PlanetFX(scene,{x:2877000000,y:0,color:'blue',radius:25362,label:'uranus'});
-	var neptune = new PlanetFX(scene,{x:4503000000,y:0,color:'blue',radius:25362,label:'neptune'});
+	var mars = new PlanetFX(scene,{x:227900000,y:0,color:'red',radius:3396,label:'mars',parent:sun});
+	var jupiter = new PlanetFX(scene,{x:778500000,y:0,color:'orange',radius:69911,label:'jupiter',parent:sun});
+	var saturn = new PlanetFX(scene,{x:1443000000,y:0,color:'orange',radius:58232,label:'saturn',parent:sun});
+	var uranus = new PlanetFX(scene,{x:2877000000,y:0,color:'blue',radius:25362,label:'uranus',parent:sun});
+	var neptune = new PlanetFX(scene,{x:4503000000,y:0,color:'blue',radius:25362,label:'neptune',parent:sun});
 
 	sync(function() {
 		var av = 20;
