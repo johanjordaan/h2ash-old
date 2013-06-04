@@ -14,20 +14,27 @@ block scripts
 	script(src='/socket.io/socket.io.js')
 	
 block content
-	p
-		i #{user_name}/#{email}
-	
-	div 
-		span#heading 
-		|
-		span#velocity
-		|
-		span#world_x
-		|
-		span#world_y
-		
-	canvas#my_canvas(width='640',height='480')	
-		
+	div.row
+		div.span12
+			p
+				i #{user_name}/#{email}
+			
+			div 
+				span#heading 
+				|
+				span#velocity
+				|
+				span#world_x
+				|
+				span#world_y
+		div.row	
+			div.span8
+				canvas#my_canvas(width='640',height='480')
+			div.span4
+				input#msg.input-small(type='text',placeholder='Text ...')
+				p Hallo World!
+				
+			
 	//-a.btn.btn-primary(href="#create_dialogue",role="button",data-toggle="modal") Create
 			
 	div#create_dialogue.modal.hide.fade(role='dialog',tabindex='-1',aria-hidden='true',aria-labelledby='myModalLabel')

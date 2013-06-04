@@ -143,8 +143,11 @@ $(function() {
 			this.bindings[key] = {up:up,down:down}
 		},
 		log_event : function(type,e) {
-			if(_.has(this.bindings,e.keyCode))
+			if(_.has(this.bindings,e.keyCode)) {
 				this.bindings[e.keyCode][type]();
+				return false;
+			}
+			return true;
 		}
 	}	
 
@@ -169,13 +172,12 @@ $(function() {
 	
 	
 	$(document).keyup(function(e) {
-		keyboard.log_event('up',e);
-		return false;
+		return keyboard.log_event('up',e);
+
 	});
 	
 	$(document).keydown(function(e) {
-		keyboard.log_event('down',e);
-		return false;
+		return keyboard.log_event('down',e);
 	});
 	
 	$('#my_canvas').dblclick(function(e) {

@@ -90,7 +90,7 @@ console.log(hs.session);
    *       seconds. I don't know how useful this is in the context of
    *       this demo, considering that the sessions aren't going to
    *       expire in the near future. So feel free to not include this: */
-  var intervalID = setInterval(function(){
+  /*var intervalID = setInterval(function(){
     hs.session.reload(function(){
       hs.session.touch().save();
     });
@@ -98,7 +98,7 @@ console.log(hs.session);
   socket.on('disconnect', function(){
     console.log('A socket with sessionID '+hs.sessionID+' disconnected.');
     clearInterval(intervalID);
-  });
+  });*/
  
 });
 
