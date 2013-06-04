@@ -18,6 +18,7 @@ GridFX.prototype.render = function(parent,timestamp) {
 	var y_offset = (this.scene.camera.center_y*this.scene.camera.magnification - this.scene.screen.height/2)%this.step;
 
 	this.scene.screen.context.save();
+	context.setTransform(1, 0, 0, 1, 0, 0);				// Reset the transform
 	this.scene.screen.context.strokeStyle = this.color;
 	
 	for(var r=0;r<=this.scene.screen.height;r+=this.step) {

@@ -9,9 +9,9 @@ var SceneNode = function() {
 SceneNode.prototype.add_child_node = function(child) {
 	this.children.push(child);
 }
-SceneNode.prototype.render_children = function(parent,timestamp) {
+SceneNode.prototype.render_children = function(timestamp) {
 	_.each(this.children,function(child,index){
-		child.render(parent,timestamp);
+		child.render(timestamp);
 	});
 }
 
@@ -21,7 +21,13 @@ var Scene = function(screen,camera) {
 	this.camera = camera;
 }
 Scene.prototype.render = function(timestamp) {
-	this.render_children(this,timestamp);
+	var x_offset = this.camera.center_x*this.camera.magnification - this.screen.width/2;
+	var y_offset = this.camera.center_y*this.camera.magnification - this.screen.height/2;
+
+	this.screen.context.save();
+	this.screen.context.translate(-x_offset,-y_offset);
+	this.render_children(timestamp);
+	this.screen.context.restore();
 }
 
 

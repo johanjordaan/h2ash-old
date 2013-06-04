@@ -112,7 +112,7 @@ $(function() {
 	var mercury = new PlanetFX(scene,{x:57910000,y:0,color:'brown',radius:2440,label:'mercury'});
 	var venus = new PlanetFX(scene,{x:108200000,y:0,color:'white',radius:6052,label:'venus'});
 	var earth = new PlanetFX(scene,{x:149600000,y:0,color:'blue',radius:6371,label:'earth'});
-	var moon = new PlanetFX(scene,{x:149600000+384400,y:0,color:'gray',radius:1737,label:'moon',parent:earth});
+	var moon = new PlanetFX(scene,{x:384400,y:0,color:'gray',radius:1737,label:'moon',parent:earth});
 	var mars = new PlanetFX(scene,{x:227900000,y:0,color:'red',radius:3396,label:'mars'});
 	var jupiter = new PlanetFX(scene,{x:778500000,y:0,color:'orange',radius:69911,label:'jupiter'});
 	var saturn = new PlanetFX(scene,{x:1443000000,y:0,color:'orange',radius:58232,label:'saturn'});

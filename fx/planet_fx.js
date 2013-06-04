@@ -7,10 +7,13 @@ if(typeof(require) == 'undefined') {
 var PlanetFX = function(scene,parms) {
 	_.extend(this,new SceneNode());
 	
-	if(_.isUndefined(parms.parent))
+	if(_.isUndefined(parms.parent)) {
 		scene.add_child_node(this);	
-	else
-		parms.parent.add_child_node(this);
+	}
+	else {
+		parms.parent.add_child_node(this);	
+		this.parent = parms.parent;
+	}
 	
 	this.scene = scene;
 
@@ -20,13 +23,12 @@ var PlanetFX = function(scene,parms) {
 	this.color = parms.color;
 	this.radius = parms.radius; 
 	this.label = parms.label;
+	
 }
 
-PlanetFX.prototype.render = function(parent,timestamp) {
+PlanetFX.prototype.render = function(timestamp) {
 	var radius = Math.floor(this.radius*this.scene.camera.magnification);
 	if(radius<2) radius = 2;
-	var x_offset = this.scene.camera.center_x*this.scene.camera.magnification - this.scene.screen.width/2;
-	var y_offset = this.scene.camera.center_y*this.scene.camera.magnification - this.scene.screen.height/2;
 	var x = this.x*this.scene.camera.magnification;
 	var y = this.y*this.scene.camera.magnification;
 	
@@ -34,7 +36,7 @@ PlanetFX.prototype.render = function(parent,timestamp) {
 	this.scene.screen.context.strokeStyle = this.color;
 
 	this.scene.screen.context.beginPath();
-	this.scene.screen.context.translate(x-x_offset,-1*y-y_offset);
+	this.scene.screen.context.translate(x,-1*y);
 	this.scene.screen.context.arc(0,0,radius,0,2*Math.PI,false);
 	this.scene.screen.context.stroke();
 	
@@ -50,9 +52,9 @@ PlanetFX.prototype.render = function(parent,timestamp) {
 	this.scene.screen.context.lineTo(radius+6+metrics.width,radius+6);
 	this.scene.screen.context.stroke();
 	
-	this.scene.screen.context.restore();	
-	
 	this.render_children(this,timestamp)
+	
+	this.scene.screen.context.restore();	
 }
 
 if(typeof module != 'undefined') {
