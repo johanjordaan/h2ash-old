@@ -244,10 +244,16 @@ Mapper.prototype.update = function(map,dest,source) {
 			} else if(field_def.type == 'List') {
 				_.each(source[field_name],function(item){
 					dest[field_name] = [];
-					dest[field_name].push(that.update(field_def.map,{},item));
+					var new_obj = {}
+					if(!_.isUndefined(field_def.map.cls))
+						new_obj = new field_def.map.cls();
+					dest[field_name].push(that.update(field_def.map,new_obj,item));
 				});
 			} else if(field_def.type == 'Ref') {
-				dest[field_name] = that.update(field_def.map,{},source[field_name]);
+				var new_obj = {}
+				if(!_.isUndefined(field_def.map.cls))
+					new_obj = new field_def.map.cls();
+				dest[field_name] = that.update(field_def.map,new_obj,source[field_name]);
 			}
 		} 
 	});
@@ -257,6 +263,9 @@ Mapper.prototype.update = function(map,dest,source) {
 Mapper.prototype.create = function(map,initial_data) {
 	var that = this;
 	var new_obj = {};
+	if(!_.isUndefined(map.cls))
+		new_obj = new map.cls();
+	
     new_obj.id = -1;
 	
 	this.update(map,new_obj,initial_data)
