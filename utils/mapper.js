@@ -229,8 +229,7 @@ Mapper.prototype.load_all = function(map,callback) {
 	});
 }
 
-Mapper.prototype.update = function(map,dest,source) {
-	var that = this;
+var _update = function(map,dest,source) {
 	if(_.isUndefined(source))
 		source = {};
 	
@@ -247,17 +246,22 @@ Mapper.prototype.update = function(map,dest,source) {
 					var new_obj = {}
 					if(!_.isUndefined(field_def.map.cls))
 						new_obj = new field_def.map.cls();
-					dest[field_name].push(that.update(field_def.map,new_obj,item));
+					dest[field_name].push(_update(field_def.map,new_obj,item));
 				});
 			} else if(field_def.type == 'Ref') {
 				var new_obj = {}
 				if(!_.isUndefined(field_def.map.cls))
 					new_obj = new field_def.map.cls();
-				dest[field_name] = that.update(field_def.map,new_obj,source[field_name]);
+				dest[field_name] = _update(field_def.map,new_obj,source[field_name]);
 			}
 		} 
 	});
 	return dest;
+}
+
+
+Mapper.prototype.update = function(map,dest,source) {
+	return _update(map,dest,source);
 }
 
 Mapper.prototype.create = function(map,initial_data) {
@@ -290,6 +294,7 @@ Mapper.prototype.create = function(map,initial_data) {
 
 if(typeof module != 'undefined') {
     module.exports.Mapper = Mapper;
+	module.exports.update = _update;
 } else {
     alert('mapper.js cannot be used on the client side');
 }
