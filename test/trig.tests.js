@@ -18,7 +18,11 @@ describe('deg2rad',function(){
 		rad = trig.deg2rad(270);
 		rad.should.equal(Math.PI*3/2);
 		rad = trig.deg2rad(360);
-		rad.should.equal(Math.PI*2);
+		rad.should.equal(0);
+		rad = trig.deg2rad(380);
+		rad.should.equal(trig.deg2rad(20));
+		rad = trig.deg2rad(-20);
+		rad.should.equal(trig.deg2rad(340));
 	});
 });
 

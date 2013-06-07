@@ -3,8 +3,14 @@ if(typeof(require) == 'undefined') {
 	_ = require('underscore');
 }
 
-var deg2rad = function(deg) { return (deg*(Math.PI/180.)); }
-var rad2deg = function(rad) { return rad*(180./Math.PI); }
+var deg2rad = function(deg) { 
+	var deg = deg%360;
+	if(deg<0) deg+=360;
+	return deg*(Math.PI/180.);
+}
+var rad2deg = function(rad) { 
+	return rad*(180./Math.PI); 
+}
 
 
 // theta in radians relative to x axis - counter clockwise
