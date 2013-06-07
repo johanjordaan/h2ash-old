@@ -21,5 +21,4 @@ var construct = function(cls) {
 if(typeof module != 'undefined') {
     module.exports.construct = construct;
 } else {
-    alert('constructor.js loaded');
 }
