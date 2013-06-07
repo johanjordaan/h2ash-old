@@ -56,7 +56,7 @@ describe('Scene',function() {
 	});
 	describe('#render',function() {
 		it('should render the scenes nodes',function() {
-			var context = new Mock();
+			var context = new Mock(['save','translate','restore']);
 			var screen = new Screen(640,480,context);	
 			var camera = new Camera(0,0,6400,screen.aspect_ratio)
 			var scene = new Scene(screen,camera);
@@ -64,7 +64,7 @@ describe('Scene',function() {
 			scene.add_child_node(new SceneNode());
 			
 			var scene = new Mock(scene);
-			scene.expect('render_children',[scene,10]);	
+			scene.expect('render_children',[10]);	
 			
 			scene.render(10);
 			

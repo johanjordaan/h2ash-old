@@ -7,18 +7,26 @@ var GridFX = function(scene,parms) {
 	_.extend(this,new SceneNode());
 	scene.add_child_node(this);	
 	
+	if(_.isUndefined(parms.parent)) {
+		scene.add_child_node(this);	
+	}
+	else {
+		parms.parent.add_child_node(this);	
+		this.parent = parms.parent;
+	}
+	
 	this.scene = scene;
 
 	this.color = parms.color;
 	this.step = parms.step; 
 }
 
-GridFX.prototype.render = function(parent,timestamp) {
+GridFX.prototype.render = function(timestamp) {
 	var x_offset = (this.scene.camera.center_x*this.scene.camera.magnification - this.scene.screen.width/2)%this.step;
 	var y_offset = (this.scene.camera.center_y*this.scene.camera.magnification - this.scene.screen.height/2)%this.step;
 
 	this.scene.screen.context.save();
-	context.setTransform(1, 0, 0, 1, 0, 0);				// Reset the transform
+	this.scene.screen.context.setTransform(1, 0, 0, 1, 0, 0);				// Reset the transform
 	this.scene.screen.context.strokeStyle = this.color;
 	
 	for(var r=0;r<=this.scene.screen.height;r+=this.step) {

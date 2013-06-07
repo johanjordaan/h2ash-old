@@ -5,6 +5,8 @@ if(typeof(require) == 'undefined') {
 }
 
 var PlanetFX = function(scene,parms) {
+	// Scene Things
+	//
 	_.extend(this,new SceneNode());
 	
 	if(_.isUndefined(parms.parent)) {
@@ -17,12 +19,16 @@ var PlanetFX = function(scene,parms) {
 	
 	this.scene = scene;
 
+	// Object data
+	//
 	this.x = parms.x;
 	this.y = parms.y;
-
-	this.color = parms.color;
 	this.radius = parms.radius; 
 	this.label = parms.label;
+
+	// fx data
+	//
+	this.color = parms.color;
 	
 }
 

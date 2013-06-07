@@ -15,7 +15,7 @@ var GridFX = require('../fx/grid_fx.js').GridFX;
 describe('GridFX',function() {
 	describe('#render',function() {
 		it('should should render the grid fx correctly at the specified location',function() { 
-			var context = new Mock(['save','restore','beginPath','moveTo','lineTo']);
+			var context = new Mock(['save','restore','beginPath','moveTo','lineTo','setTransform']);
 			
 			var screen = new Screen(640,480,context);
 			var camera = new Camera(14960000,0,0.007848062);

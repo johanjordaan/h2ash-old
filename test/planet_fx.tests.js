@@ -23,7 +23,7 @@ describe('PlanetFX',function() {
 			
 			var earth = new PlanetFX(scene,{x:14960000,y:0,color:'blue',radius:6371,label:'earth'});
 						
-			context.expect('translate',[Math.floor((14960000*0.007848062) - (14960000*0.007848062-320)),240]);
+			context.expect('translate',[14960000*0.007848062,0]);
 			context.expect('arc',[0,0,50,0,2*Math.PI,false]);
 			// Mocks need to be fixed to handle this situation
 			//
