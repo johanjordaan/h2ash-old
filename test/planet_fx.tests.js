@@ -25,10 +25,8 @@ describe('PlanetFX',function() {
 						
 			context.expect('translate',[14960000*0.007848062,0]);
 			context.expect('arc',[0,0,50,0,2*Math.PI,false]);
-			// Mocks need to be fixed to handle this situation
-			//
 			context.expect('stroke',[],function(){	
-				//context.strokeStyle.should.equal('blue');
+				context.strokeStyle.should.equal('blue');
 			});
 
 
@@ -40,9 +38,8 @@ describe('PlanetFX',function() {
 				return({width:10});
 			});
 			context.expect('lineTo',[66,56]);
-			// See the above bug ...
 			context.expect('stroke',[],function(){
-				//context.strokeStyle.should.equal('gray');
+				context.strokeStyle.should.equal('gray');
 			});
 			
 			earth.render(scene,10)
