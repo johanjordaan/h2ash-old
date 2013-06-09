@@ -29,7 +29,7 @@ describe('Mock',function() {
 		});
 	});
 	
-	describe('#expect',function(){
+	describe('#expect/#validate',function(){
 		it('should create an expectation for a method and allow the method to be called',function(){
 			var mock = new Mock(['func_a']);
 			
@@ -44,10 +44,7 @@ describe('Mock',function() {
 			
 			mock.actual_calls.length.should.equal(1);
 			mock.methods['func_a'].call_count.should.equal(1);
-		})
-	});
-	
-	describe('#validate',function(){
+		});
 		it('should create an expectation for a method',function(){
 			var mock = new Mock(['func_a','func_b']);
 			
@@ -80,8 +77,22 @@ describe('Mock',function() {
 			var v = mock.validate();
 			v.status.should.equal('error');
 			v.messages.length.should.equal(2);
-			//console.log(v.messages);
 		})
+		it('should create an expectation on the same function with different values',function() {
+			var source = {f1:function(a){ this.val = a; } , f2:function(a) { this.val = a; this.f1(a); }}
+			var mock = new Mock(source);
+			
+			mock.expect('f1',[1],function(m){ m.val.should.equal(1);});
+			mock.expect('f1',[2],function(m){ m.val.should.equal(2);});
+			
+			source.f2(1);
+			source.f2(2);
+			
+			var v = mock.validate(true);
+			v.status.should.equal('ok');
+			v.messages.length.should.equal(0);
+			
+		});
 
 	});
 	

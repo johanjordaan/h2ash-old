@@ -16,7 +16,7 @@ var Mock = function(arg) {
 	}
 	
 	var that = source;		
-	that.methods = {};			// { func : { method_name:'func',mock_func:some_func,call_count:0 } }
+	that.methods = {};			// { func : { method_name:'func',mock_funcs:[],func_idx,call_count:0 } }
 	that.expected_calls = []; 	// List of {method_name:'func',expected_args:[],callback:callback}
 	that.actual_calls = []; 	// List of {method_name:'func',actual_args:[]}
 		
@@ -31,12 +31,22 @@ Mock.prototype._add_method = function(method_name) {
 	if(!_.has(that.methods,method_name)) {
 		that.methods[method_name] = { 
 			method_name:method_name,
-			mock_func:function() {
+			default_mock_func:function() {
 				that.methods[method_name].call_count++;
-			},
+			}, 
+			mock_funcs:[],
+			func_idx:0,
 			call_count:0 
 		};
-		that[method_name] = that.methods[method_name].mock_func;
+		that[method_name] = function() {
+			var args = Array.prototype.slice.call(arguments, 0);
+			var method_def = that.methods[method_name];
+			if(method_def.mock_funcs.length==0) return method_def.default_mock_func.apply(that,args); 
+			var f =  method_def.mock_funcs[method_def.func_idx];
+			if(method_def.func_idx<method_def.mock_funcs.length-1)
+				method_def.func_idx++;
+			return f.apply(that,args);
+		}
 	}
 }
 
@@ -46,7 +56,7 @@ Mock.prototype.expect = function(method_name,expected_args,callback) {
 	that._add_method(method_name);
 	that.expected_calls.push({method_name:method_name,expected_args:expected_args,callback:callback});
 		
-	that.methods[method_name].mock_func = function() {
+	that.methods[method_name].mock_funcs.push(function() {
 		var args = Array.prototype.slice.call(arguments, 0);
 		var ret_val;
 		if(!_.isUndefined(callback))
@@ -54,8 +64,7 @@ Mock.prototype.expect = function(method_name,expected_args,callback) {
 		that.actual_calls.push({method_name:method_name,actual_args:args});
 		that.methods[method_name].call_count++;
 		return ret_val;
-	}
-	that[method_name] = that.methods[method_name].mock_func;
+	});
 }
 
 Mock.prototype.validate = function(display_messages) {
