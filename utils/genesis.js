@@ -52,9 +52,10 @@ Genesis.prototype.generate_planet = function() {
 }
 
 Genesis.prototype.generate_moon = function(parent_radius) {
+	var d = this._rnd(100000,1000000);
 	var R = this._rnd(parent_radius*.01,parent_radius*0.5);
 	
-	return {radius:R};
+	return {radius:R,distance:d};
 }
 
 Genesis.prototype.generate_solar_system = function() {
