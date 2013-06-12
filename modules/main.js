@@ -40,17 +40,6 @@ var render = function(time) {
 }
 
 var update_objects = function(time) {
-	var delta = 1/camera.magnification;
-	if(scroll_up) camera.translate(0,-delta);
-	if(scroll_down)  camera.translate(0,+delta);
-	if(scroll_left) camera.translate(-delta,0);
-	if(scroll_right) camera.translate(+delta,0);
-	
-	if(zoom_in) camera.magnification*=1.01;
-	if(zoom_out) camera.magnification/=1.01;
-	
-	
-	
 	var v = my_ship.v;
 	if(speed_up) {
 		if(v<40) v++;
@@ -77,14 +66,8 @@ var update_objects = function(time) {
 	
 }
 
-var scroll_up = false;
-var scroll_down = false;
-var scroll_left = false;
-var scroll_right = false;
 var speed_up = false;
 var slow_down = false;
-var zoom_in = false;
-var zoom_out = false;
 
 var screen;
 var camera;
@@ -127,6 +110,7 @@ $(function() {
 		
 		var animate = function() {
 			var time = getTimestamp();
+			keyboard.update();
 			update_objects(time);
 			render(time);
 			setTimeout(animate, 0);
@@ -136,49 +120,17 @@ $(function() {
 
 	setInterval(function() { sync(); },5000)
 		
-	var keyboard = {
-		bindings : {},
-	
-		bind : function(key,down,up) {
-			this.bindings[key] = {up:up,down:down}
-		},
-		log_event : function(type,e) {
-			if(_.has(this.bindings,e.keyCode)) {
-				this.bindings[e.keyCode][type]();
-				return false;
-			}
-			return true;
-		}
-	}	
+	keyboard.bind();
+	keyboard.bind_key(keyboard.key_up,function(){ camera.translate(0,-1/camera.magnification); },function() { });
+	keyboard.bind_key(keyboard.key_down,function(){ camera.translate(0,+1/camera.magnification); },function() { });	
+	keyboard.bind_key(keyboard.key_left,function(){ camera.translate(-1/camera.magnification,0); },function() { });	
+	keyboard.bind_key(keyboard.key_right,function(){ camera.translate(+1/camera.magnification,0); },function() { });	
+	keyboard.bind_key(keyboard.key_plus,function(){ camera.magnification*=1.01; },function() { });	
+	keyboard.bind_key(keyboard.key_minus,function(){ camera.magnification/=1.01; },function() { });	
 
-	// 38 up ,40 down, 37 left, 39 right
-	var key_up = 38;
-	var key_down = 40;
-	var key_left = 37;
-	var key_right = 39;
-	var key_w = 87;
-	var key_s = 83;
-	var key_plus = 187;
-	var key_minus = 189;
-	keyboard.bind(key_up,function(){ scroll_up = true; },function() { scroll_up = false; });
-	keyboard.bind(key_down,function(){ scroll_down = true; },function() { scroll_down = false; });	
-	keyboard.bind(key_left,function(){ scroll_left = true; },function() { scroll_left = false; });	
-	keyboard.bind(key_right,function(){ scroll_right = true; },function() { scroll_right = false; });	
-	keyboard.bind(key_w,function(){ speed_up = true; },function() { speed_up = false; });	
-	keyboard.bind(key_s,function(){ slow_down = true; },function() { slow_down = false; });	
-	keyboard.bind(key_w,function(){ speed_up = true; },function() { speed_up = false; });	
-	keyboard.bind(key_plus,function(){ zoom_in = true; },function() { zoom_in = false; });	
-	keyboard.bind(key_minus,function(){ zoom_out = true; },function() { zoom_out = false; });	
 	
-	
-	$(document).keyup(function(e) {
-		return keyboard.log_event('up',e);
-
-	});
-	
-	$(document).keydown(function(e) {
-		return keyboard.log_event('down',e);
-	});
+	//keyboard.bind_key(keyboard.key_w,function(){ speed_up = true; },function() { speed_up = false; });	
+	//keyboard.bind_key(keyboard.key_s,function(){ slow_down = true; },function() { slow_down = false; });	
 	
 	$('#my_canvas').dblclick(function(e) {
 		var coords = clickEventToElementCoordinates(this,e);
