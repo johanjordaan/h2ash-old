@@ -3,6 +3,7 @@ if(typeof(require) == 'undefined') {
 	_ = require('underscore');
 }
 
+// return value in ms
 var get_timestamp = function() {
 	if(typeof module != 'undefined') {
 		var t = process.hrtime(); //[s,ns]
