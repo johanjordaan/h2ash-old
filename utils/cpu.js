@@ -13,9 +13,28 @@ var ISA = function() {
 		2  : {type:'RRR',name:'or'  ,action:function(cpu,r0,r1,r2) { cpu.r[r0] = cpu.r[r1] | cpu.r[r2]; } },
 		3  : {type:'RR' ,name:'not' ,action:function(cpu,r0,r1)    { cpu.r[r0] = !cpu.r[r1]; } },
 		4  : {type:'RRR',name:'xor' ,action:function(cpu,r0,r1,r2) { cpu.r[r0] = cpu.r[r1] ^ cpu.r[r2]; } },
+		5  : {type:'RRR',name:'shr' ,action:function(cpu,r0,r1,r2) { cpu.r[r0] = cpu.r[r1] >> cpu.r[r2]; } },
+		6  : {type:'RRR',name:'shl' ,action:function(cpu,r0,r1,r2) { cpu.r[r0] = cpu.r[r1] << cpu.r[r2]; } },
+		7  : {type:'RRR',name:'ror' ,action:function(cpu,r0,r1,r2) { var lsb = cpu.r[r1] & 1; cpu.r[r0] = (cpu.r[r1] >> cpu.r[r2])|lsb<<31;} },
+		8  : {type:'RRR',name:'rol' ,action:function(cpu,r0,r1,r2) { var msb = cpu.r[r1] & (1<<31); cpu.r[r0] = (cpu.r[r1] << cpu.r[r2])|msb; } },
+
+		9  : {type:'RRR',name:'add' ,action:function(cpu,r0,r1,r2) { cpu.r[r0] = cpu.r[r1] + cpu.r[r2] ; } },
+		10 : {type:'RRR',name:'sub' ,action:function(cpu,r0,r1,r2) { cpu.r[r0] = cpu.r[r1] - cpu.r[r2] ; } },
+		11 : {type:'RRR',name:'mul' ,action:function(cpu,r0,r1,r2) { cpu.r[r0] = cpu.r[r1] * cpu.r[r2] ; } },
+		12 : {type:'RRR',name:'div' ,action:function(cpu,r0,r1,r2) { if(cpu.r[r2]!=0) cpu.r[r0] = cpu.r[r1] / cpu.r[r2] ; } },
+		13 : {type:'R'  ,name:'inc' ,action:function(cpu,r0) 	   { cpu.r[r0]++; } },
+		14 : {type:'R'  ,name:'dec' ,action:function(cpu,r0) 	   { cpu.r[r0]--; } },
 		
-		16 : {type:'RI' ,name:'seti',action:function(cpu,r0,imm)   { cpu.r[r0] = imm;  } },
-		23 : {type:'I'  ,name:'ji'  ,action:function(cpu,imm)      { cpu.r[0] = imm; } }
+				
+		
+		15 : {type:'RR' ,name:'set' ,action:function(cpu,r0,r1)    { cpu.r[r0] = cpu.r[r1]; } },
+		16 : {type:'RI' ,name:'seti',action:function(cpu,r0,imm)   { cpu.r[r0] = imm; } },
+		17 : {type:'RRI',name:'load',action:function(cpu,r0,r1,imm){ cpu.r[r0] = m[ cpu.r[r1] + imm ];} },
+		18 : {type:'RRI',name:'stor',action:function(cpu,r0,r1,imm){ m[ cpu.r[r1] + imm ] = cpu.r[r0];} },
+				
+		
+		22 : {type:'RRI',name:'je'  ,action:function(cpu,r0,r1,imm){ if(cpu.r[r0] == cpu.r[r1]) cpu.r[0] = imm; } },
+		23 : {type:'I'  ,name:'ji'  ,action:function(cpu,imm)      { cpu.r[0] = imm; } },
 	};
 	this.instructions_by_name = {};
 	_.each(this.instructions,function(value,key){
@@ -35,10 +54,16 @@ ISA.prototype.parse = function(str) {
 	} else 	if(i.type=='RR') {
 		ret_val |= Number(tokens[1]&0xF)<<((this.instruction_length-this.opcode_length-this.register_length));
 		ret_val |= Number(tokens[2]&0xF)<<((this.instruction_length-this.opcode_length-2*this.register_length));
-	} else if(i.type=='RI') {
+	} else 	if(i.type=='RRI') {
+		ret_val |= Number(tokens[1]&0xF)<<((this.instruction_length-this.opcode_length-this.register_length));
+		ret_val |= Number(tokens[2]&0xF)<<((this.instruction_length-this.opcode_length-2*this.register_length));
+		ret_val |= Number(tokens[3])
+	}else if(i.type=='RI') {
 		ret_val |= Number(tokens[1]&0xF)<<((this.instruction_length-this.opcode_length-this.register_length));
 		ret_val |= Number(tokens[2])
-	} else if(i.type=='I') {
+	} else if(i.type=='R') {
+		ret_val |= Number(tokens[1]&0xF)<<((this.instruction_length-this.opcode_length-this.register_length));
+	}else if(i.type=='I') {
 		ret_val |= Number(tokens[1])
 	}
 	return ret_val;
@@ -66,9 +91,14 @@ ISA.prototype.execute = function(cpu,instruction) {
 		i.action(cpu,r0,r1,r2);
 	} else 	if(i.type == 'RR') {
 		i.action(cpu,r0,r1);
-	} else if(i.type == 'RI') {
+	} else 	if(i.type == 'RRI') {
+		var imm   = instruction&0x0001FFFF;
+		i.action(cpu,r0,r1);
+	}else if(i.type == 'RI') {
 		var imm   = instruction&0x001FFFFF;
 		i.action(cpu,r0,imm);
+	} else if(i.type == 'R') {
+		i.action(cpu,r0);
 	} else if(i.type == 'I') {
 		var imm   = instruction&0x03FFFFFF;
 		i.action(cpu,imm);
