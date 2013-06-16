@@ -267,6 +267,39 @@ describe('CPU',function(){
 			cpu.step();
 			cpu.r[0].should.equal(2);
 		});
+		
+		it('should pause when when a call has not returned yet',function() {
+			var cpu = new CPU();
+			cpu.add_module(0x09,{
+				call:function(cpu,offset,callback) {  
+					cpu.paused.should.equal(true);
+					callback();
+				}
+			});
+
+			
+			var p = [
+				cpu.isa.parse('seti 2,0x09'),
+				cpu.isa.parse('seti 3,0x05'),
+				cpu.isa.parse('call 2,3,0x00'),
+				cpu.isa.parse('xor 2,2,2'),
+				cpu.isa.parse('ji 3'),
+				0x01
+			];
+			
+			cpu.load(p);
+			cpu.step();
+			cpu.step();
+			cpu.step();
+			cpu.paused.should.equal(false);
+			cpu.r[0].should.equal(3);
+			
+			
+			cpu.m.length.should.equal(6);
+			
+			
+		});
+
 	});
 	
 	
