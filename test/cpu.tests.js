@@ -1,3 +1,4 @@
+var util = require('util');
 var _ = require('underscore');
 var assert = require('assert')
 var should = require('chai').should();
@@ -101,9 +102,15 @@ describe('ISA',function(){
 			var mcode = isa.parse('ji 0x30');
 			isa.format_instruction(mcode).should.equal('0101 1100 0000 0000 - 0000 0000 0011 0000')
 		});
+		it('should parse the call instruction',function() {
+			var mcode = isa.parse('call 1,2,0x30');
+			isa.format_instruction(mcode).should.equal('0110 0000 0100 1000 - 0000 0000 0011 0000')
+		});
 	});
 	describe('#execute',function() {
 		
+		// We need to test this first since it is used in all the other tests
+		//
 		it('should execute the seti instruction',function() {
 			var isa = new ISA();
 			var cpu = {r:[]}
@@ -114,22 +121,80 @@ describe('ISA',function(){
 			isa.execute(cpu,isa.parse('seti 0xFF,0x10'));
 			cpu.r[15].should.equal(0x10);
 		});
-		it('should execute the and instruction',function() {
-			var isa = new ISA();
-			var cpu = {r:[]}
-			isa.execute(cpu,isa.parse('seti 2,0x10'));
-			isa.execute(cpu,isa.parse('seti 3,0x1F'));
-			
-			isa.execute(cpu,isa.parse('and 4,2,3'));
-			cpu.r[3].should.equal(0x1F);
-			cpu.r[4].should.equal(0x10);
-			
-			isa.execute(cpu,isa.parse('and 4,2,2'));
-			cpu.r[4].should.equal(0x10);
+		
 
-			isa.execute(cpu,isa.parse('and 4,2,9'));
-			cpu.r[4].should.equal(0x0);
+		var isa = new ISA();
+		var cpu = {r:[],m:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x99]}
+
+		
+		// Test the RRR instructions
+		//
+		var RRR_test_set = [
+			[2,0x10,3,0x1F,4,{and:0x10 , or:0x1F , xor:0x0F , shr:0x00 , shl:0x00 ,ror:0x00		  , rol:0x00 , add:0x2F , sub:0xFFFFFFF1 , mul:0x1F0 , div:0x00 } ],
+			[2,0x01,3,0x01,4,{and:0x01 , or:0x01 , xor:0x00 , shr:0x00 , shl:0x02 ,ror:0x80000000 , rol:0x02 , add:0x02 , sub:0x00       , mul:0x001 , div:0x01 } ],
+			[2,0x02,3,0x01,4,{and:0x00 , or:0x03 , xor:0x03 , shr:0x01 , shl:0x04 ,ror:0x01		  , rol:0x04 , add:0x03 , sub:0x01       , mul:0x002 , div:0x02 } ],
+		];
+		var RRR_test = function(op) {
+			_.each(RRR_test_set,function(test){
+				isa.execute(cpu,isa.parse(util.format('seti %s,%s',test[0],test[1])));
+				isa.execute(cpu,isa.parse(util.format('seti %s,%s',test[2],test[3])));
+				isa.execute(cpu,isa.parse(util.format('%s %s,%s,%s',op,test[4],test[0],test[2])));
+				cpu.r[test[4]].should.equal(test[5][op],test);
+			});
+		}
+		var RR_test_set = [
+			[2,0x10,8,{not:0x00 , set:0x10 } ],
+			[2,0x00,8,{not:0x01 , set:0x00 } ],
+		];
+		var RR_test = function(op) {
+			_.each(RR_test_set,function(test){
+				isa.execute(cpu,isa.parse(util.format('seti %s,%s',test[0],test[1])));
+				isa.execute(cpu,isa.parse(util.format('%s %s,%s',op,test[2],test[0])));
+				cpu.r[test[2]].should.equal(test[3][op],test);
+			});
+		}
+		var R_test_set = [
+			[2,0x10,2,{inc:0x11 , dec:0x0F} ],
+		];
+
+		var R_test = function(op) {
+			_.each(R_test_set,function(test){
+				isa.execute(cpu,isa.parse(util.format('seti %s,%s',test[0],test[1])));
+				isa.execute(cpu,isa.parse(util.format('%s %s,%s,%s',op,test[2])));
+				cpu.r[test[2]].should.equal(test[3][op],test);
+			});
+		}
+				
+		it('should execute the and instruction',function() { RRR_test('and') });
+		it('should execute the or instruction',function()  { RRR_test('or') });
+		it('should execute the xor instruction',function() { RRR_test('xor') });
+		it('should execute the shr instruction',function() { RRR_test('shr') });
+		it('should execute the shl instruction',function() { RRR_test('shl') });
+		it('should execute the ror instruction',function() { RRR_test('ror') });
+		it('should execute the rol instruction',function() { RRR_test('rol') });
+		it('should execute the add instruction',function() { RRR_test('add') });
+		it('should execute the sub instruction',function() { RRR_test('sub') });
+		it('should execute the mul instruction',function() { RRR_test('mul') });
+		it('should execute the div instruction',function() { RRR_test('div') });
+		it('should execute the not instruction',function() { RR_test('not') });
+		it('should execute the set instruction',function() { RR_test('set') });
+		it('should execute the inc instruction',function() { R_test('inc') });
+		it('should execute the dec instruction',function() { R_test('dec') });
+
+		it('should execute the load instruction',function() { 
+			cpu.m[8] = 0x99;
+			isa.execute(cpu,isa.parse('seti 3,0x03'));
+			isa.execute(cpu,isa.parse('load 2,3,0x05'));
+			cpu.r[2].should.equal(0x99);
 		});
+
+		it('should execute the stor instruction',function() { 
+			isa.execute(cpu,isa.parse('seti 2,0xCC'));
+			isa.execute(cpu,isa.parse('seti 3,0x10'));
+			isa.execute(cpu,isa.parse('stor 2,3,0x02'));
+			cpu.m[0x12].should.equal(0xCC);
+		});
+
 		it('should execute the ji instruction',function() {
 			var isa = new ISA();
 			var cpu = {r:[]}
