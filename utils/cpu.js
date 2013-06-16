@@ -25,13 +25,10 @@ var ISA = function() {
 		13 : {type:'R'  ,name:'inc' ,action:function(cpu,r0) 	   { cpu.r[r0]++; } },
 		14 : {type:'R'  ,name:'dec' ,action:function(cpu,r0) 	   { cpu.r[r0]--; } },
 		
-				
-		
 		15 : {type:'RR' ,name:'set' ,action:function(cpu,r0,r1)    { cpu.r[r0] = cpu.r[r1]; } },
 		16 : {type:'RI' ,name:'seti',action:function(cpu,r0,imm)   { cpu.r[r0] = imm; } },
 		17 : {type:'RRI',name:'load',action:function(cpu,r0,r1,imm){ cpu.r[r0] = cpu.m[ cpu.r[r1] + imm ];  } },
 		18 : {type:'RRI',name:'stor',action:function(cpu,r0,r1,imm){ cpu.m[ cpu.r[r1] + imm ] = cpu.r[r0];} },
-				
 		
 		22 : {type:'RRI',name:'je'  ,action:function(cpu,r0,r1,imm){ if(cpu.r[r0] == cpu.r[r1]) cpu.r[0] = imm; } },
 		23 : {type:'I'  ,name:'ji'  ,action:function(cpu,imm)      { cpu.r[0] = imm; } },

@@ -195,16 +195,23 @@ describe('ISA',function(){
 			cpu.m[0x12].should.equal(0xCC);
 		});
 
+		
+		it('should execute the je instruction',function() {
+			isa.execute(cpu,isa.parse('seti 0,0x00'));
+			isa.execute(cpu,isa.parse('seti 9,0x89'));
+			isa.execute(cpu,isa.parse('seti 8,0x89'));
+			isa.execute(cpu,isa.parse('je 8,9,0x10'));
+			cpu.r[0].should.equal(0x10);
+			isa.execute(cpu,isa.parse('seti 0,0x00'));
+			isa.execute(cpu,isa.parse('je 0,8,0x10'));
+			cpu.r[0].should.equal(0x00);
+		});
+		
 		it('should execute the ji instruction',function() {
-			var isa = new ISA();
-			var cpu = {r:[]}
-			isa.execute(cpu,isa.parse('seti 2,0x10'));
-			isa.execute(cpu,isa.parse('seti 3,0x1F'));
-			
+			isa.execute(cpu,isa.parse('seti 0,0x00'));
 			isa.execute(cpu,isa.parse('ji 1'));
 			cpu.r[0].should.equal(1);
 		});
-
 	});
 });
 
