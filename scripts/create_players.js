@@ -7,7 +7,7 @@ var object = require('../utils/object.js');
 
 var mapper = new Mapper();
 
-var ship1 = object.create(100,-100,object.getTimestamp());
+var ship1 = object.create(149600000.0,8000,object.getTimestamp());
 ship1.id = 1;
 var ship2 = object.create(300,-100,object.getTimestamp());
 ship2.id = 2;
