@@ -7,7 +7,7 @@ if(typeof(require) == 'undefined') {
 
 var constants = {
 	AU:149597871,				// Astronomical Unit : Km
-	sigma:5.670373e-8,		// Stefan-Boltzmann Konstant : W/(m^2*K^4)
+	sigma:5.670373e-8,			// Stefan-Boltzmann Konstant : W/(m^2*K^4)
 	Ls_Sun:3.839e26,			// Luminosity of the Sun	
 	WaterFreezingPoint:273.15,
 	WaterBoilingPoint:373.15
