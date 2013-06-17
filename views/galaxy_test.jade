@@ -1,0 +1,22 @@
+extends layout
+
+block scripts
+	script(src='trig.js')
+	script(src='screen.js')
+	script(src='camera.js')
+	script(src='scene.js')
+	script(src='time.js')
+	script(src='galaxy_test.js')
+	
+block content
+	div#stats
+	canvas#my_canvas(width='640',height='480')
+	br
+	a.btn.btn-primary#rotate_btn Rotate
+	a.btn.btn-primary#smear_btn Smear
+	br
+	a.btn.btn-primary#flat_random_btn Flat
+	a.btn.btn-primary#normal_random_btn Normal
+	a.btn.btn-primary#polar_flat_random_btn Flat(p)
+	a.btn.btn-primary#polar_normal_random_btn Normal(p)
+	a.btn.btn-primary#spikes_btn Spikes(p)

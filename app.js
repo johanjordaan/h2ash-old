@@ -33,6 +33,7 @@ app.configure('development', function(){
 
 require('./routes/index.js')(app);
 require('./routes/main.js')(app);
+require('./routes/galaxy_test.js')(app);
 
 
 var server = http.createServer(app);
