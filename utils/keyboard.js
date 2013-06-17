@@ -30,7 +30,8 @@ var keyboard = {
 	update : function() {
 		var that = this;
 		_.each(that.down,function(keyCode){
-			that.bindings[keyCode]['down']();
+			if(!_.isUndefined(that.bindings[keyCode]))
+				that.bindings[keyCode]['down']();
 		});
 	}
 
