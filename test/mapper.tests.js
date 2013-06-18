@@ -71,12 +71,13 @@ var account_map = {
 var person_map = {
     model_name 	: 'Person',
     fields 	: {
-		name 	 		: { type:'Simple', default_value:'*name*' },
-		surname	 		: { type:'Simple', default_value:'*surname*' },
-		age		 		: { type:'Simple', default_value:10,conversion:Number },
-		contact_details	: { type:'Ref', map:contact_details_map, internal:true },
+		name 	 				: { type:'Simple', default_value:'*name*' },
+		surname	 				: { type:'Simple', default_value:'*surname*' },
+		age		 				: { type:'Simple', default_value:10,conversion:Number },
+		contact_details			: { type:'Ref', map:contact_details_map, internal:true },
 		extra_contact_details	: { type:'Ref', map:contact_details_map, internal:true },
-		accounts 		: { type:'List', map : account_map, internal : true}
+		accounts 				: { type:'List', map : account_map, internal : true },
+		lotto_numbers			: { type:'SimpleList', default_value:[], conversion:Number },
 	},
 	default_collection : 'People'
 };
@@ -342,8 +343,27 @@ describe('Mapper', function() {
 					done();
 				});
 			});
+		});
+		
+		it('should save and load SimpleList types by de-/serialising them and loading/saving them',function(done){
+			var mapper = new Mapper(debug_db);
+			var initial_data = {};
+			var p = mapper.create(person_map,initial_data);
+
+			p.lotto_numbers.should.be.a('Array');
 			
+			p.lotto_numbers.push(12);
+			p.lotto_numbers.push(18);
+			p.name = 'Johan';
 			
+			mapper.save(person_map,p,function(saved_person){
+				saved_person.id.should.equal(1);
+				mapper.load(person_map,1,function(loaded_person){
+					loaded_person.id.should.equal(1);
+					loaded_person.lotto_numbers.length.should.equal(2);
+					done();
+				});
+			});
 		});
 	});
 })

@@ -49,7 +49,7 @@ var Mapper = function(db_id,client_count) {
 		
 	this.clients = [];
 	for(var i=0;i<this.client_count;i++) {
-		var c = redis.createClient();;
+		var c = redis.createClient();
 		c.select(this.db_id);
 		this.clients.push(c);
 	}
@@ -112,6 +112,8 @@ Mapper.prototype.save = function(map,obj,callback) {
 			_.each(current_object.map.fields,function(field,field_name){
 				if(field.type == 'Simple') {
 					j2.call(hset,that._get_client(),object_key,field_name,current_object.obj[field_name],function(){});
+				} else if(field.type == 'SimpleList') { 
+					j2.call(hset,that._get_client(),object_key,field_name,current_object.obj[field_name].toString(),function(){});
 				} else if(field.type == 'Ref') {
 					j2.call(hset,that._get_client(),object_key,field_name,current_object.obj[field_name].id,function(){});
 				} else if(field.type == 'List') {
@@ -165,6 +167,13 @@ Mapper.prototype._load = function(map,id,j,callback) {
 				else
 					obj[field_name] = val;
 			});
+		} else if(field.type == 'SimpleList') { 
+			j.call(hget,that._get_client(),object_key,field_name,function(err,val){
+				if(!_.isUndefined(field.conversion))
+					obj[field_name] = _.map(val.split(','),field.conversion);
+				else
+					obj[field_name] = val.split(',');
+			});
 		} else if(field.type == 'Ref'){
 			j.call(hget,that._get_client(),object_key,field_name,function(err,child_id){
 				that._load(field.map,parseInt(child_id),j,function(ref_obj){
@@ -181,7 +190,6 @@ Mapper.prototype._load = function(map,id,j,callback) {
 			});
 		}		
 	});
-
 	callback(obj);		// This callback seems to be a bit out of place ... Maybe it needs to be dropped totally?
 }
 
@@ -275,10 +283,13 @@ Mapper.prototype.create = function(map,initial_data) {
 	this.update(map,new_obj,initial_data)
 	
 	_.each(map.fields, function(field_def,field_name) {
-		if(field_name in new_obj) {
+		if(_.has(new_obj,field_name)) {
 		} else {
 			if(field_def.type == 'Simple') 
 				new_obj[field_name] = field_def.default_value;		// Assuming that a conversion is not required for defaults
+			else if(field_def.type == 'SimpleList') {
+				new_obj[field_name] = field_def.default_value.slice();		// Assuming that a conversion is not required for defaults
+			}
 			else if(field_def.type == 'List')
 				new_obj[field_name] = [];
 			else if(field_def.type == 'Ref') {
@@ -287,7 +298,6 @@ Mapper.prototype.create = function(map,initial_data) {
 			}
 		}
 	});
-	
 	return new_obj;
 } 
 
