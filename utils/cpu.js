@@ -1,6 +1,7 @@
 if(typeof(require) == 'undefined') {
 } else {
 	_ = require('underscore');
+	mapper = require('../utils/mapper.js');
 }
 
 var ISA = function() {
@@ -105,22 +106,36 @@ ISA.prototype.execute = function(cpu,instruction) {
 }
 var isa = new ISA();
 
-var CPU = function() {
-	this.paused = false;
+var CPU = function(map,source) {
+	this.map = map;
+	if(!_.isUndefined(source))
+		this.set(source);
+	else {
+		this.m = [];
+		this.clear_registers();
+		this.paused = false;
+		this.modules = {};
+	}
 	this.isa = isa;
-	this.modules = {};
-	this.load([]);
 }
+CPU.prototype.set = function(source) {
+	mapper.update(this.map,this,source);
+};
+
 CPU.prototype.add_module = function(num,module) {
 	this.modules[num] = module;
 }
- 
-CPU.prototype.load = function(m) {
-	this.m = m;
+
+CPU.prototype.clear_registers = function() {
 	this.r = [];
 	for(var i=0;i<16;i++) {
 		this.r[i] = 0;
 	}
+}
+ 
+CPU.prototype.load = function(m) {
+	this.m = m;
+	this.clear_registers();
 }
 CPU.prototype.step = function() {
 	if(this.paused) return;
