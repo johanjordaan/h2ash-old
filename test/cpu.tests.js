@@ -4,8 +4,8 @@ var assert = require('assert')
 var should = require('chai').should();
 var expect = require('chai').expect;
 
-var ISA = require('../utils/cpu.js').ISA;
-var CPU = require('../utils/cpu.js').CPU;
+var ISA = require('../models/cpu.js').ISA;
+var CPU = require('../models/cpu.js').CPU;
 
 describe('ISA',function(){
 	describe('#parse',function() {

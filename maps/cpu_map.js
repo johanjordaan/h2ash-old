@@ -1,7 +1,7 @@
 if(typeof(require) == 'undefined') {
 } else {
 	_ = require('underscore');
-	CPU = require('../utils/cpu.js').CPU;
+	CPU = require('../models/cpu.js').CPU;
 }
 var cpu_map = {
 	model_name	: 'CPU',

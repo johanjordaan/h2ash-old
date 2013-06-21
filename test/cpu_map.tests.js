@@ -5,7 +5,7 @@ var expect = require('chai').expect;
 
 var redis = require('redis');
 
-var CPU = require('../utils/cpu.js').CPU;
+var CPU = require('../models/cpu.js').CPU;
 var cpu_map = require('../maps/cpu_map.js').cpu_map;
 var Mapper = require('../utils/mapper.js').Mapper;
 
