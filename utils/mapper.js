@@ -264,47 +264,59 @@ var _update = function(map,dest,source) {
 			}
 		} 
 	});
+	
+	_add_defaults(map,dest);
+	
 	return dest;
 }
 
 
 Mapper.prototype.update = function(map,dest,source) {
-	return _update(map,dest,source);
+	return _update(map,dest,source);	
 }
 
-Mapper.prototype.create = function(map,initial_data) {
+var _add_defaults = function(map,obj) {
 	var that = this;
+	_.each(map.fields, function(field_def,field_name) {
+		if(_.has(obj,field_name)) {
+		} else {
+			if(field_def.type == 'Simple') 
+				obj[field_name] = field_def.default_value;		// Assuming that a conversion is not required for defaults
+			else if(field_def.type == 'SimpleList') {
+				obj[field_name] = field_def.default_value.slice();		// Assuming that a conversion is not required for defaults
+			}
+			else if(field_def.type == 'List')
+				obj[field_name] = [];
+			else if(field_def.type == 'Ref') {
+				if(field_def.internal)
+					obj[field_name] = _create(field_def.map);
+			}
+		}
+	});
+	return obj;
+}
+
+var _create = function(map,initial_data) {
 	var new_obj = {};
 	if(!_.isUndefined(map.cls))
 		new_obj = new map.cls();
 	
     new_obj.id = -1;
 	
-	this.update(map,new_obj,initial_data)
+	_update(map,new_obj,initial_data)
 	
-	_.each(map.fields, function(field_def,field_name) {
-		if(_.has(new_obj,field_name)) {
-		} else {
-			if(field_def.type == 'Simple') 
-				new_obj[field_name] = field_def.default_value;		// Assuming that a conversion is not required for defaults
-			else if(field_def.type == 'SimpleList') {
-				new_obj[field_name] = field_def.default_value.slice();		// Assuming that a conversion is not required for defaults
-			}
-			else if(field_def.type == 'List')
-				new_obj[field_name] = [];
-			else if(field_def.type == 'Ref') {
-				if(field_def.internal)
-					new_obj[field_name] = that.create(field_def.map);
-			}
-		}
-	});
 	return new_obj;
+} 
+
+Mapper.prototype.create = function(map,initial_data) {
+	return _create(map,initial_data);
 } 
 
 
 if(typeof module != 'undefined') {
     module.exports.Mapper = Mapper;
 	module.exports.update = _update;
+	module.exports.create = _create;
 } else {
     alert('mapper.js cannot be used on the client side');
 }

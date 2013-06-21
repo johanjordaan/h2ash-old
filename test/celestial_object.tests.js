@@ -15,7 +15,7 @@ describe('CelestialObject',function(){
 			var celestial_object = new CelestialObject(celestial_object_map,source);
 			celestial_object.map.should.equal(celestial_object_map);
 			celestial_object.radius.should.equal(source.radius);
-			expect(celestial_object.name).to.be.undefined;
+			celestial_object.name.should.equal(celestial_object_map.fields.name.default_value);
 		});
 	});
 	describe('#set',function() {

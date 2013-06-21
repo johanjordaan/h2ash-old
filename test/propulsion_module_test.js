@@ -38,4 +38,19 @@ describe('PropulsionModule',function(){
 			
 		});
 	});
+	
+	describe('#set_speed',function(){
+		it('should set the speed of the module to the specified percentage of the max_speed',function(){
+			var type_source = {name:'test module',max_speed:30,latency:1000}
+			var type = new PropulsionModuleType(propulsion_module_type_map,type_source)
+			var pm_source = { type:type}
+			var pm = new PropulsionModule(propulsion_module_map,pm_source)
+			
+			pm.speed.should.equal(0);
+			
+		});
+	});
+	
+	describe('#get_speed',function(){
+	});
 });
