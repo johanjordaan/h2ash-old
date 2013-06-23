@@ -236,12 +236,35 @@ describe('CPU',function(){
 			cpu.r[0] = 20;
 
 			var mcode = cpu.isa.parse('seti 3,0x20');
-			cpu.load([mcode]);
+			cpu.load([mcode],1000);
 			cpu.r[0].should.equal(0);
 			cpu.m.length.should.equal(1);
 			cpu.m[0].should.equal(mcode);
+			cpu.last_update.should.equal(1000);
 		});
 	});
+
+	describe('#pause',function() {
+		it('should pause execution of the cpu ',function() {
+			var cpu = new CPU();
+			cpu.pause(1000);
+			cpu.last_update.should.equal(1000);
+			cpu.paused.should.equal(true);
+		});
+	});
+
+	describe('#un_pause',function() {
+		it('should resume execution of the cpu after being paused',function() {
+			var cpu = new CPU();
+			cpu.pause(1000);
+			cpu.last_update.should.equal(1000);
+			cpu.paused.should.equal(true);
+			cpu.un_pause(2000);
+			cpu.last_update.should.equal(2000);
+			cpu.paused.should.equal(false);
+		});
+	});
+
 	
 	describe('#step',function() {
 		it('should execute the current instruction and update the pc(register 0) as required ',function() {
@@ -255,17 +278,21 @@ describe('CPU',function(){
 			
 			cpu.load(p);
 			cpu.m.length.should.equal(4);
-			cpu.step();
+			cpu.step(1000);
 			cpu.r[0].should.equal(1);
 			cpu.r[3].should.equal(0x20);
-			cpu.step();
+			cpu.last_update.should.equal(1000);
+			cpu.step(2000);
 			cpu.r[0].should.equal(2);
 			cpu.r[4].should.equal(0x10);
-			cpu.step();
+			cpu.last_update.should.equal(2000);
+			cpu.step(3000);
 			cpu.r[0].should.equal(3);
 			cpu.r[3].should.equal(0);
-			cpu.step();
+			cpu.last_update.should.equal(3000);
+			cpu.step(4000);
 			cpu.r[0].should.equal(2);
+			cpu.last_update.should.equal(4000);
 		});
 		
 		it('should pause when when a call has not returned yet',function() {
@@ -273,7 +300,9 @@ describe('CPU',function(){
 			cpu.add_module(0x09,{
 				call:function(cpu,offset,callback) {  
 					cpu.paused.should.equal(true);
-					callback();
+					callback(4000);
+					cpu.paused.should.equal(false);
+					cpu.last_update.should.equal(4000);
 				}
 			});
 
@@ -288,15 +317,13 @@ describe('CPU',function(){
 			];
 			
 			cpu.load(p);
-			cpu.step();
-			cpu.step();
-			cpu.step();
+			cpu.step(1000);
+			cpu.step(2000);
+			cpu.step(3000);
 			cpu.paused.should.equal(false);
 			cpu.r[0].should.equal(3);
-			
-			
+			cpu.last_update.should.equal(3000);
 			cpu.m.length.should.equal(6);
-			
 			
 		});
 

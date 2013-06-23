@@ -1,6 +1,7 @@
 if(typeof(require) == 'undefined') {
 } else {
 	_ = require('underscore');
+	time = require('../utils/time.js');
 	mapper = require('../utils/mapper.js');
 }
 
@@ -33,7 +34,7 @@ var ISA = function() {
 		
 		22 : {type:'RRI',name:'je'  ,action:function(cpu,r0,r1,imm){ if(cpu.r[r0] == cpu.r[r1]) cpu.r[0] = imm; } },
 		23 : {type:'I'  ,name:'ji'  ,action:function(cpu,imm)      { cpu.r[0] = imm; } },
-		24 : {type:'RRI',name:'call',action:function(cpu,r0,r1,imm){ cpu.paused=true; cpu.modules[cpu.r[r0]].call(cpu,cpu.r[r1]+imm,function(){ cpu.paused=false});  } },
+		24 : {type:'RRI',name:'call',action:function(cpu,r0,r1,imm,timestamp){ cpu.pause(timestamp); cpu.modules[cpu.r[r0]].call(cpu,cpu.r[r1]+imm,function(timestamp){ cpu.un_pause(timestamp);});  } },
 		
 	};
 	this.instructions_by_name = {};
@@ -112,39 +113,56 @@ var CPU = function(map,source) {
 		this.set(source);
 	else {
 		this.m = [];
-		this.clear_registers();
+		this._clear_registers();
 		this.paused = false;
 		this.modules = {};
+		this.last_update = time.get_timestamp();
 	}
 	this.isa = isa;
 }
 CPU.prototype.set = function(source) {
 	mapper.update(this.map,this,source);
+	this.last_update = time.get_timestamp();
 };
 
 CPU.prototype.add_module = function(num,module) {
 	this.modules[num] = module;
 }
 
-CPU.prototype.clear_registers = function() {
+CPU.prototype._clear_registers = function() {
 	this.r = [];
 	for(var i=0;i<16;i++) {
 		this.r[i] = 0;
 	}
 }
  
-CPU.prototype.load = function(m) {
+CPU.prototype.load = function(m,timestamp) {
 	this.m = m;
-	this.clear_registers();
+	this._clear_registers();
+	this.last_update = timestamp;
 }
-CPU.prototype.step = function() {
+CPU.prototype.step = function(timestamp) {
 	if(this.paused) return;
 	var ip = this.r[0];
 	var c = this.m[ip];
-	this.isa.execute(this,c);
+	this.isa.execute(this,c,timestamp);
 	if(ip==this.r[0])
 		this.r[0]++;
+	this.last_update = timestamp;	
+		
 }
+
+CPU.prototype.pause = function(timestamp) {
+	this.paused = true;
+	this.last_update = timestamp;	
+}
+
+CPU.prototype.un_pause = function(timestamp) {
+	this.paused = false;
+	this.last_update = timestamp;	
+}
+
+
 
 if(typeof module != 'undefined') {
     module.exports.ISA = ISA;
