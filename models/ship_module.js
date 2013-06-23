@@ -24,10 +24,10 @@ ShipModule.prototype.call = function(cpu,callback) {
 	this.activated = true;		
 	
 	var latency = this.base_latency;
-	this.current_command = commands[cpu[1]];
+	this.current_command = this.commands[cpu[1]];
 	this.current_cpu = cpu;
 	this.current_callbacl = callback;
-	if(_.isUndefined(command)) 
+	if(_.isUndefined(this.current_command)) 
 		latency += this.unknown_command_latency;
 	else
 		latency += command*=latency;

@@ -48,9 +48,39 @@ describe('PropulsionModule',function(){
 			
 			pm.speed.should.equal(0);
 			
+			pm.set_speed(10);
+			pm.speed.should.equal(type_source.max_speed*.10);
+			pm.set_speed(-10);
+			pm.speed.should.equal(0,'not clamping to zero');
+			pm.set_speed(110);
+			pm.speed.should.equal(type_source.max_speed,'not clamping to max');
+			
+			
+			
+			
 		});
 	});
 	
 	describe('#get_speed',function(){
+		it('should get the speed of the module as a percentage of the max_speed',function(){
+			var type_source = {name:'test module',max_speed:30,latency:1000}
+			var type = new PropulsionModuleType(propulsion_module_type_map,type_source)
+			var pm_source = { type:type}
+			var pm = new PropulsionModule(propulsion_module_map,pm_source)
+			
+			pm.speed.should.equal(0);
+			
+			pm.set_speed(10);
+			pm.speed.should.equal(type_source.max_speed*.10);
+			pm.get_speed().should.equal(10);
+			
+			pm.set_speed(-10);
+			pm.speed.should.equal(0,'not clamping to zero');
+			pm.get_speed().should.equal(0);
+			
+			pm.set_speed(110);
+			pm.speed.should.equal(type_source.max_speed,'not clamping to max');
+			pm.get_speed().should.equal(100);
+		});
 	});
 });

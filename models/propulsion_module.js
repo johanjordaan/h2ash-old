@@ -16,9 +16,13 @@ var PropulsionModule = function(map,source) {
 	}	
 }
 PropulsionModule.prototype.set_speed = function(perc) {
+	if(perc<0) perc = 0;
+	else if(perc>100) perc = 100;
 	
+	this.speed = this.type.max_speed*perc/100;
 }
 PropulsionModule.prototype.get_speed = function() {
+	return (this.speed/this.type.max_speed)*100;
 }
 
 

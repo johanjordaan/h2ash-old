@@ -10,6 +10,7 @@ var propulsion_module_map = {
 		type			: { type:'Ref' ,map:propulsion_module_type_map },
 		speed			: { type:'Simple', default_value:0,conversion:Number },
 		activated		: { type:'Simple', default_value:false,conversion:function(val){ return val=='true'} },
+		completion_time	: { type:'Simple', default_value:0/*, conversion:time.get_timestamp*/ },
 	},
 	default_collection	: 'PropulsionModules',
 	cls : PropulsionModule
