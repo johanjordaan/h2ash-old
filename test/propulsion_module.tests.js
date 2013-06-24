@@ -55,9 +55,6 @@ describe('PropulsionModule',function(){
 			pm.set_speed(110);
 			pm.speed.should.equal(type_source.max_speed,'not clamping to max');
 			
-			
-			
-			
 		});
 	});
 	
