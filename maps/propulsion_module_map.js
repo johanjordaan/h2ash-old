@@ -7,10 +7,10 @@ if(typeof(require) == 'undefined') {
 }
 var propulsion_module_map = {
 	model_name	: 'PropulsionModule',
-	fields		: _.extend(ship_module_map.fields, {
+	fields		: _.extend({
 		type			: { type:'Ref' ,map:propulsion_module_type_map },
 		speed			: { type:'Simple', default_value:0,conversion:Number },
-	}),
+	},ship_module_map.fields),
 	default_collection	: 'PropulsionModules',
 	cls : PropulsionModule
 }
