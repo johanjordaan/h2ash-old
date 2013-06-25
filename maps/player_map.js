@@ -1,5 +1,8 @@
-var object_map = require('./object_map.js').object_map;
-
+if(typeof(require) == 'undefined') {
+} else {
+	_ = require('underscore');
+	ship_map = require('../maps/ship_map.js').ship_map;
+}
 var player_map = {
 	model_name	: 'Player',
 	id_field    : 'email',
@@ -7,7 +10,7 @@ var player_map = {
 		email		: { type:'Simple', default_value:'' },
 		user_name	: { type:'Simple', default_value:'' },
 		password	: { type:'Simple', default_value:'' },
-		ship		: { type:'Ref'	 , map:object_map, internal:false }
+		ship		: { type:'Ref'	 , map:ship_map, internal:false }
 	},
 	default_collection	: 'Players'
 }
@@ -15,5 +18,4 @@ var player_map = {
 if(typeof module != 'undefined') {
     module.exports.player_map = player_map;
 } else {
-    alert('player_map.js is not for FE');
 }

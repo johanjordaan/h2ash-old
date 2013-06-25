@@ -8,32 +8,54 @@ var object = require('../utils/object.js');
 var mapper = new Mapper();
 
 
+
 /////////////////
-var PropulsionModule = require('../models/propulsion_module.js').PropulsionModule;// Needs to be created
-var NavigationModule = require('../models/navigation_module.js').NavigationModule;// Needs to be created
+var PropulsionModuleType = require('../models/propulsion_module_type.js').PropulsionModuleType;
+var PropulsionModule = require('../models/propulsion_module.js').PropulsionModule;
+var NavigationModuleType = require('../models/navigation_module_type.js').NavigationModuleType;
+var NavigationModule = require('../models/navigation_module.js').NavigationModule;
 var CPU = require('../models/cpu.js').CPU;	
-var Ship = require('../models/ship.js').Ship; // Needs to be created
+var ShipType = require('../models/ship_type.js').ShipType; 
+var Ship = require('../models/ship.js').Ship; 
 
-var propulsion_module_map = require('../maps/propulsion_module_map.js').propulsion_module_map;// Needs to be created
-var navigation_module_map = require('../maps/navigation_module_map.js').navigation_module_map;// Needs to be created
+var propulsion_module_type_map = require('../maps/propulsion_module_type_map.js').propulsion_module_type_map;
+var propulsion_module_map = require('../maps/propulsion_module_map.js').propulsion_module_map;
+var navigation_module_type_map = require('../maps/navigation_module_type_map.js').navigation_module_type_map;
+var navigation_module_map = require('../maps/navigation_module_map.js').navigation_module_map;
 var cpu_map = require('../maps/cpu_map.js').cpu_map;
-var ship_map = require('../maps/ship_map.js').ship_map;// Needs to be created
+var ship_type_map = require('../maps/ship_type_map.js').ship_type_map;
+var ship_map = require('../maps/ship_map.js').ship_map;
 
-var propulsion_module = new PropulsionModule(propulsion_module_map,{max_speed:50,latency:1000});
-var navigation_module = new NavigationModule(navigation_module_map,{latency:1000});
-var cpu = new CPU(cpu_map,{memory:1000,tpi:500,max_modules:2});
-cpu.add_module(0,propulsion);
-cpu.add_module(1,navigation);
-var ship = new Ship(ship_map,{x:149600000.0,y:8000,name:'nx-01',cpu:cpu,propulsion:propulsion_module,navigation:navigation_module});
+var propulsion_module_type = new PropulsionModuleType(propulsion_module_type_map,{name:'Plasma Engine I',max_speed:50,latency:1000});
+var propulsion_module = new PropulsionModule(propulsion_module_map,{type:propulsion_module_type});
+var navigation_module_type = new NavigationModuleType(navigation_module_type_map,{name:'Mapper 1000',latency:1000});
+var navigation_module = new NavigationModule(navigation_module_map,{type:navigation_module_type});
+var cpu = new CPU(cpu_map);
+cpu.add_module(0,propulsion_module);
+cpu.add_module(1,navigation_module);
+var ship_type = new ShipType(ship_type_map,{name:'Explorer Class I'})
+var ship1 = new Ship(ship_map,{
+	type : ship_type,
+	mechanical_object : {
+		x:149600000.0,
+		y:8000
+	},	
+	cpus:[cpu],
+	propulsion_modules:[propulsion_module],
+	navigation_modules:[navigation_module],
+});
+var ship2 = new Ship(ship_map,{
+	type : ship_type,
+	mechanical_object : {
+		x:149600000.0,
+		y:20000
+	},	
+	cpus:[cpu],
+	propulsion_modules:[propulsion_module],
+	navigation_modules:[navigation_module],
+});
 /////////////////
 
-
-
-
-var ship1 = object.create(149600000.0,8000,object.getTimestamp());
-ship1.id = 1;
-var ship2 = object.create(300,-100,object.getTimestamp());
-ship2.id = 2;
 
 
 var players = [
