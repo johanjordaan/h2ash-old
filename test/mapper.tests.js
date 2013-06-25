@@ -6,6 +6,7 @@ var expect = require('chai').expect;
 var redis = require('redis');
 
 var printf = require('../utils/printf.js').printf
+var mapper = require('../utils/mapper.js');
 var Mapper = require('../utils/mapper.js').Mapper;
 
 
@@ -68,6 +69,11 @@ var account_map = {
 	default_collection : 'Accounts'
 };
 
+var Person = function(map,source) {
+	this.xxx = 'xxx';
+}
+
+
 var person_map = {
     model_name 	: 'Person',
     fields 	: {
@@ -79,7 +85,8 @@ var person_map = {
 		accounts 				: { type:'List', map : account_map, internal : true },
 		lotto_numbers			: { type:'SimpleList', default_value:[], conversion:Number },
 	},
-	default_collection : 'People'
+	default_collection : 'People',
+	cls:Person
 };
 
 
@@ -365,5 +372,28 @@ describe('Mapper', function() {
 				});
 			});
 		});
+		
+		
+		it('should create a class of the specific type when loading a map with a cls attr',function(done){
+			var mapper = new Mapper(debug_db);
+			var initial_data = {};
+			var p = mapper.create(person_map,initial_data);
+
+			p.lotto_numbers.should.be.a('Array');
+			
+			p.lotto_numbers.push(12);
+			p.lotto_numbers.push(18);
+			p.name = 'Johan';
+			
+			mapper.save(person_map,p,function(saved_person){
+				saved_person.id.should.equal(1);
+				mapper.load(person_map,1,function(loaded_person){
+					loaded_person.id.should.equal(1);
+					loaded_person.xxx.should.equal('xxx');
+					done();
+				});
+			});
+		});
+
 	});
 })

@@ -259,7 +259,7 @@ var _update = function(map,dest,source) {
 			} else if(field_def.type == 'Ref') {
 				var new_obj = {}
 				if(!_.isUndefined(field_def.map.cls))
-					new_obj = new field_def.map.cls();
+					new_obj = new field_def.map.cls(map);
 				dest[field_name] = _update(field_def.map,new_obj,source[field_name]);
 			}
 		} 
