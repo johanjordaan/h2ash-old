@@ -88,6 +88,7 @@ ISA.prototype.execute = function(cpu,instruction) {
 	//var imm1   = (instruction&0x0000FFFF);
 
 	var i = this.instructions[opcode];
+	if(_.isUndefined(i)) return;				// The cpu will just step over any unrecognised instructions
 	if(i.type == 'RRR') {
 		i.action(cpu,r0,r1,r2);
 	} else 	if(i.type == 'RR') {
@@ -144,6 +145,8 @@ CPU.prototype.load = function(m,timestamp) {
 CPU.prototype.step = function(timestamp) {
 	if(this.paused) return;
 	var ip = this.r[0];
+	if(ip>=this.m.length) return;
+
 	var c = this.m[ip];
 	this.isa.execute(this,c,timestamp);
 	if(ip==this.r[0])

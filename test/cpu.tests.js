@@ -326,6 +326,18 @@ describe('CPU',function(){
 			cpu.m.length.should.equal(6);
 			
 		});
+		
+		it('should do nothing if the IP point to a memory location with nothing',function() {
+			var cpu = new CPU();
+			cpu.step(1000);
+			cpu.r[0].should.equal(0);
+			
+			cpu.load([0,0]);
+			cpu.step(2000);
+			cpu.r[0].should.equal(1);
+			
+		});
+
 
 	});
 	
