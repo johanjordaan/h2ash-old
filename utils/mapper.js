@@ -24,6 +24,9 @@ var smembers = function(client,key,callback) {
 }
 
 
+
+
+
 var make_key = function(name,id,field_name) {
 	var key;
 	if(_.isUndefined(field_name)) {
@@ -152,6 +155,9 @@ Mapper.prototype.save_all = function(map,obj_list,callback) {
 	
 }
 
+
+
+
 Mapper.prototype._load = function(map,id,j,callback) {
     var that = this;
     
@@ -190,7 +196,8 @@ Mapper.prototype._load = function(map,id,j,callback) {
 			});
 		}		
 	});
-	callback(obj);		// This callback seems to be a bit out of place ... Maybe it needs to be dropped totally?
+	callback(obj);		// This callback seems to be a bit out of place ... Maybe it needs to be dropped totally? 
+	                    // It is used to invoke the junction finalise
 }
 
 
@@ -241,6 +248,11 @@ var _update = function(map,dest,source) {
 	if(_.isUndefined(source))
 		source = {};
 	
+	if(_.isUndefined(source.id))
+		source.id  = -1;
+
+	dest.id = source.id;
+		
 	_.each(map.fields, function(field_def,field_name) {
 		if(field_name in source) {
 			if(field_def.type == 'Simple') {
@@ -299,9 +311,7 @@ var _add_defaults = function(map,obj) {
 var _create = function(map,initial_data) {
 	var new_obj = {};
 	if(!_.isUndefined(map.cls))
-		new_obj = new map.cls();
-	
-    new_obj.id = -1;
+		new_obj = new map.cls(map);
 	
 	_update(map,new_obj,initial_data)
 	

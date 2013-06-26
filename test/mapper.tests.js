@@ -34,12 +34,17 @@ var user_map = {
 	default_collection : 'Users'
 }
 
+var Bank = function(map,source) {
+	this._name = 'Bank';
+}
+
 var bank_map = {
 	model_name	: 'Bank',		
 	fields 	: {
 		name 	 : { type:'Simple', default_value:'*name*' }
 	},
-	default_collection : 'Banks'
+	default_collection : 'Banks',
+	cls:Bank
 }
 
 var contact_details_map = {
@@ -60,17 +65,22 @@ var bank_map_with_init = {
 	default_collection : 'Banks'
 }
 
+var Account = function(map,source) {
+	this._name = 'Account';
+}
+
 var account_map = {
 	model_name	: 'Account',	
 	fields	: {
 		type 	: { type:'Simple', default_value:'*type*' },
 		bank	: { type:'Ref', map:bank_map, internal:false }
 	},
-	default_collection : 'Accounts'
+	default_collection : 'Accounts',
+	cls:Account,
 };
 
 var Person = function(map,source) {
-	this.xxx = 'xxx';
+	this._name = 'Person';
 }
 
 
@@ -376,20 +386,22 @@ describe('Mapper', function() {
 		
 		it('should create a class of the specific type when loading a map with a cls attr',function(done){
 			var mapper = new Mapper(debug_db);
-			var initial_data = {};
-			var p = mapper.create(person_map,initial_data);
+			var p = mapper.create(person_map,{});
+			var b = mapper.create(bank_map);
+			var a = mapper.create(account_map,{bank:b});
+			p.accounts.push(a);	
 
-			p.lotto_numbers.should.be.a('Array');
-			
-			p.lotto_numbers.push(12);
-			p.lotto_numbers.push(18);
 			p.name = 'Johan';
+			p.accounts.length.should.equal(1);
 			
 			mapper.save(person_map,p,function(saved_person){
 				saved_person.id.should.equal(1);
 				mapper.load(person_map,1,function(loaded_person){
 					loaded_person.id.should.equal(1);
-					loaded_person.xxx.should.equal('xxx');
+					loaded_person._name.should.equal('Person');
+					loaded_person.accounts.length.should.equal(1);
+					loaded_person.accounts[0]._name.should.equal('Account');
+					loaded_person.accounts[0].bank._name.should.equal('Bank');
 					done();
 				});
 			});
