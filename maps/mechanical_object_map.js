@@ -1,7 +1,7 @@
 if(typeof(require) == 'undefined') {
 } else {
 	_ = require('underscore');
-	MechanicalObject = require('../models/celestial_object.js').MechanicalObject;
+	MechanicalObject = require('../models/mechanical_object.js').MechanicalObject;
 }
 
 var mechanical_object_map = {
