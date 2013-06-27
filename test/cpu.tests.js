@@ -8,103 +8,215 @@ var ISA = require('../models/cpu.js').ISA;
 var CPU = require('../models/cpu.js').CPU;
 
 describe('ISA',function(){
-	describe('#parse',function() {
+	describe('#_parse',function() {
 		var isa = new ISA();
 
 		// Logical instructions
 		//
 		it('should parse the and instruction',function() {
-			var mcode = isa.parse('and 3,2,1');
-			isa.format_instruction(mcode).should.equal('0000 0100 1100 1000 - 0100 0000 0000 0000')
+			var mcode = isa._parse('and 3,2,1');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0000 0100 1100 1000 - 0100 0000 0000 0000')
 		});
 		it('should parse the or instruction',function() {
-			var mcode = isa.parse('or 3,2,1');
-			isa.format_instruction(mcode).should.equal('0000 1000 1100 1000 - 0100 0000 0000 0000')
+			var mcode = isa._parse('or 3,2,1');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0000 1000 1100 1000 - 0100 0000 0000 0000')
 		});
 		it('should parse the not instruction',function() {
-			var mcode = isa.parse('not 3,2');
-			isa.format_instruction(mcode).should.equal('0000 1100 1100 1000 - 0000 0000 0000 0000')
+			var mcode = isa._parse('not 3,2');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0000 1100 1100 1000 - 0000 0000 0000 0000')
 		});
-		it('should parse the not instruction',function() {
-			var mcode = isa.parse('xor 3,2');
-			isa.format_instruction(mcode).should.equal('0001 0000 1100 1000 - 0000 0000 0000 0000')
+		it('should parse the xor instruction',function() {
+			var mcode = isa._parse('xor 3,2,1');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0001 0000 1100 1000 - 0100 0000 0000 0000')
 		});
 		it('should parse the shr instruction',function() {
-			var mcode = isa.parse('shr 3,2,1');
-			isa.format_instruction(mcode).should.equal('0001 0100 1100 1000 - 0100 0000 0000 0000')
+			var mcode = isa._parse('shr 3,2,1');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0001 0100 1100 1000 - 0100 0000 0000 0000')
 		});
 		it('should parse the shl instruction',function() {
-			var mcode = isa.parse('shl 3,2,4');
-			isa.format_instruction(mcode).should.equal('0001 1000 1100 1001 - 0000 0000 0000 0000')
+			var mcode = isa._parse('shl 3,2,4');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0001 1000 1100 1001 - 0000 0000 0000 0000')
 		});
 		it('should parse the ror instruction',function() {
-			var mcode = isa.parse('ror 3,2,1');
-			isa.format_instruction(mcode).should.equal('0001 1100 1100 1000 - 0100 0000 0000 0000')
+			var mcode = isa._parse('ror 3,2,1');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0001 1100 1100 1000 - 0100 0000 0000 0000')
 		});
 		it('should parse the rol instruction',function() {
-			var mcode = isa.parse('rol 3,2,4');
-			isa.format_instruction(mcode).should.equal('0010 0000 1100 1001 - 0000 0000 0000 0000')
+			var mcode = isa._parse('rol 3,2,4');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0010 0000 1100 1001 - 0000 0000 0000 0000')
 		});
 
 		// Arthmatic instructions
 		//
 		it('should parse the add instruction',function() {
-			var mcode = isa.parse('add 3,2,4');
-			isa.format_instruction(mcode).should.equal('0010 0100 1100 1001 - 0000 0000 0000 0000')
+			var mcode = isa._parse('add 3,2,4');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0010 0100 1100 1001 - 0000 0000 0000 0000')
 		});
 		it('should parse the sub instruction',function() {
-			var mcode = isa.parse('sub 3,2,4');
-			isa.format_instruction(mcode).should.equal('0010 1000 1100 1001 - 0000 0000 0000 0000')
+			var mcode = isa._parse('sub 3,2,4');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0010 1000 1100 1001 - 0000 0000 0000 0000')
 		});
 		it('should parse the mul instruction',function() {
-			var mcode = isa.parse('mul 3,2,4');
-			isa.format_instruction(mcode).should.equal('0010 1100 1100 1001 - 0000 0000 0000 0000')
+			var mcode = isa._parse('mul 3,2,4');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0010 1100 1100 1001 - 0000 0000 0000 0000')
 		});
 		it('should parse the div instruction',function() {
-			var mcode = isa.parse('div 3,2,4');
-			isa.format_instruction(mcode).should.equal('0011 0000 1100 1001 - 0000 0000 0000 0000')
+			var mcode = isa._parse('div 3,2,4');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0011 0000 1100 1001 - 0000 0000 0000 0000')
 		});
 		it('should parse the inc instruction',function() {
-			var mcode = isa.parse('inc 10');
-			isa.format_instruction(mcode).should.equal('0011 0110 1000 0000 - 0000 0000 0000 0000')
+			var mcode = isa._parse('inc 10');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0011 0110 1000 0000 - 0000 0000 0000 0000')
 		});
 		it('should parse the dec instruction',function() {
-			var mcode = isa.parse('dec 10');
-			isa.format_instruction(mcode).should.equal('0011 1010 1000 0000 - 0000 0000 0000 0000')
+			var mcode = isa._parse('dec 10');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0011 1010 1000 0000 - 0000 0000 0000 0000')
 		});
 		
 		// Data movement instructions
 		//
 		it('should parse the set instruction',function() {
-			var mcode = isa.parse('set 2,7');
-			isa.format_instruction(mcode).should.equal('0011 1100 1001 1100 - 0000 0000 0000 0000')
+			var mcode = isa._parse('set 2,7');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0011 1100 1001 1100 - 0000 0000 0000 0000')
 		});
 		it('should parse the seti instruction',function() {
-			var mcode = isa.parse('seti 2,0x10');
-			isa.format_instruction(mcode).should.equal('0100 0000 1000 0000 - 0000 0000 0001 0000')
+			var mcode = isa._parse('seti 2,0x10');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0100 0000 1000 0000 - 0000 0000 0001 0000')
 		});
 		it('should parse the load instruction',function() {
-			var mcode = isa.parse('load 2,1,0x10');
-			isa.format_instruction(mcode).should.equal('0100 0100 1000 0100 - 0000 0000 0001 0000')
+			var mcode = isa._parse('load 2,1,0x10');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0100 0100 1000 0100 - 0000 0000 0001 0000')
 		});
 		it('should parse the stor instruction',function() {
-			var mcode = isa.parse('stor 2,1,0x10');
-			isa.format_instruction(mcode).should.equal('0100 1000 1000 0100 - 0000 0000 0001 0000')
+			var mcode = isa._parse('stor 2,1,0x10');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0100 1000 1000 0100 - 0000 0000 0001 0000')
 		});
 		
 		// Flow control instructions
 		//
 		it('should parse the je instruction',function() {
-			var mcode = isa.parse('je 3,2,0x30');
-			isa.format_instruction(mcode).should.equal('0101 1000 1100 1000 - 0000 0000 0011 0000')
+			var mcode = isa._parse('je 3,2,0x30');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0101 1000 1100 1000 - 0000 0000 0011 0000')
 		});
 		it('should parse the ji instruction',function() {
-			var mcode = isa.parse('ji 0x30');
-			isa.format_instruction(mcode).should.equal('0101 1100 0000 0000 - 0000 0000 0011 0000')
+			var mcode = isa._parse('ji 0x30');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0101 1100 0000 0000 - 0000 0000 0011 0000')
 		});
 		it('should parse the call instruction',function() {
-			var mcode = isa.parse('call 1,2,0x30');
-			isa.format_instruction(mcode).should.equal('0110 0000 0100 1000 - 0000 0000 0011 0000')
+			var mcode = isa._parse('call 1,2,0x30');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0110 0000 0100 1000 - 0000 0000 0011 0000')
+		});
+		
+		// Negative testing
+		//
+		it('should handle unknown instructions by emitting a zero',function() {
+			var mcode = isa._parse('xxx 1,2,0x30');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Unknown instruction [xxx]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+		});
+		it('should handle RRR instructions with insufficient parameters',function() {
+			var mcode = isa._parse('add');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [add]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+			
+			var mcode = isa._parse('sub 1');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [sub]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+
+			var mcode = isa._parse('mul 1,2');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [mul]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+		});
+		
+		it('should handle RR instructions with insufficient parameters',function() {
+			var mcode = isa._parse('not');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [not]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+			
+			var mcode = isa._parse('set 1');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [set]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+		});
+		
+		it('should handle RRI instructions with insufficient parameters',function() {
+			var mcode = isa._parse('load');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [load]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+			
+			var mcode = isa._parse('stor 1');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [stor]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+
+			var mcode = isa._parse('je 1,2');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [je]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+		});
+
+		it('should handle RI instructions with insufficient parameters',function() {
+			var mcode = isa._parse('seti');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [seti]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+			
+			var mcode = isa._parse('seti 1');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [seti]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+		});
+
+		it('should handle R instructions with insufficient parameters',function() {
+			var mcode = isa._parse('dec');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [dec]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+		});
+
+		it('should handle I instructions with insufficient parameters',function() {
+			var mcode = isa._parse('ji');
+			mcode.ok.should.equal(false);
+			mcode.msg.should.equal('Insufficient parameters for instruction [ji]');
+			isa.format_instruction(mcode.mcode).should.equal('0000 0000 0000 0000 - 0000 0000 0000 0000')
+		});
+		
+	});
+	describe('#parse',function() {
+		it('should parse multiple lines and return an array of byte codes',function(){
+			var isa = new ISA();
+			var mcodes = isa.parse('add 3,2,4\nsub 3,2,4');
+			mcodes.ok.should.equal(true);
+			mcodes.mcodes.length.should.equal(2);
+			isa.format_instruction(mcodes.mcodes[0]).should.equal('0010 0100 1100 1001 - 0000 0000 0000 0000')
+			isa.format_instruction(mcodes.mcodes[1]).should.equal('0010 1000 1100 1001 - 0000 0000 0000 0000')
 		});
 	});
 	describe('#execute',function() {
@@ -114,11 +226,11 @@ describe('ISA',function(){
 		it('should execute the seti instruction',function() {
 			var isa = new ISA();
 			var cpu = {r:[]}
-			isa.execute(cpu,isa.parse('seti 2,0x10'));
+			isa.execute(cpu,isa._parse('seti 2,0x10').mcode);
 			cpu.r[2].should.equal(0x10);
 
 			// This is the test for clamping the register to 0-F
-			isa.execute(cpu,isa.parse('seti 0xFF,0x10'));
+			isa.execute(cpu,isa._parse('seti 0xFF,0x10').mcode);
 			cpu.r[15].should.equal(0x10);
 		});
 		
@@ -136,9 +248,9 @@ describe('ISA',function(){
 		];
 		var RRR_test = function(op) {
 			_.each(RRR_test_set,function(test){
-				isa.execute(cpu,isa.parse(util.format('seti %s,%s',test[0],test[1])));
-				isa.execute(cpu,isa.parse(util.format('seti %s,%s',test[2],test[3])));
-				isa.execute(cpu,isa.parse(util.format('%s %s,%s,%s',op,test[4],test[0],test[2])));
+				isa.execute(cpu,isa._parse(util.format('seti %s,%s',test[0],test[1])).mcode);
+				isa.execute(cpu,isa._parse(util.format('seti %s,%s',test[2],test[3])).mcode);
+				isa.execute(cpu,isa._parse(util.format('%s %s,%s,%s',op,test[4],test[0],test[2])).mcode);
 				cpu.r[test[4]].should.equal(test[5][op],test);
 			});
 		}
@@ -148,8 +260,8 @@ describe('ISA',function(){
 		];
 		var RR_test = function(op) {
 			_.each(RR_test_set,function(test){
-				isa.execute(cpu,isa.parse(util.format('seti %s,%s',test[0],test[1])));
-				isa.execute(cpu,isa.parse(util.format('%s %s,%s',op,test[2],test[0])));
+				isa.execute(cpu,isa._parse(util.format('seti %s,%s',test[0],test[1])).mcode);
+				isa.execute(cpu,isa._parse(util.format('%s %s,%s',op,test[2],test[0])).mcode);
 				cpu.r[test[2]].should.equal(test[3][op],test);
 			});
 		}
@@ -159,8 +271,8 @@ describe('ISA',function(){
 
 		var R_test = function(op) {
 			_.each(R_test_set,function(test){
-				isa.execute(cpu,isa.parse(util.format('seti %s,%s',test[0],test[1])));
-				isa.execute(cpu,isa.parse(util.format('%s %s,%s,%s',op,test[2])));
+				isa.execute(cpu,isa._parse(util.format('seti %s,%s',test[0],test[1])).mcode);
+				isa.execute(cpu,isa._parse(util.format('%s %s,%s,%s',op,test[2])).mcode);
 				cpu.r[test[2]].should.equal(test[3][op],test);
 			});
 		}
@@ -183,33 +295,33 @@ describe('ISA',function(){
 
 		it('should execute the load instruction',function() { 
 			cpu.m[8] = 0x99;
-			isa.execute(cpu,isa.parse('seti 3,0x03'));
-			isa.execute(cpu,isa.parse('load 2,3,0x05'));
+			isa.execute(cpu,isa._parse('seti 3,0x03').mcode);
+			isa.execute(cpu,isa._parse('load 2,3,0x05').mcode);
 			cpu.r[2].should.equal(0x99);
 		});
 
 		it('should execute the stor instruction',function() { 
-			isa.execute(cpu,isa.parse('seti 2,0xCC'));
-			isa.execute(cpu,isa.parse('seti 3,0x10'));
-			isa.execute(cpu,isa.parse('stor 2,3,0x02'));
+			isa.execute(cpu,isa._parse('seti 2,0xCC').mcode);
+			isa.execute(cpu,isa._parse('seti 3,0x10').mcode);
+			isa.execute(cpu,isa._parse('stor 2,3,0x02').mcode);
 			cpu.m[0x12].should.equal(0xCC);
 		});
 
 		
 		it('should execute the je instruction',function() {
-			isa.execute(cpu,isa.parse('seti 0,0x00'));
-			isa.execute(cpu,isa.parse('seti 9,0x89'));
-			isa.execute(cpu,isa.parse('seti 8,0x89'));
-			isa.execute(cpu,isa.parse('je 8,9,0x10'));
+			isa.execute(cpu,isa._parse('seti 0,0x00').mcode);
+			isa.execute(cpu,isa._parse('seti 9,0x89').mcode);
+			isa.execute(cpu,isa._parse('seti 8,0x89').mcode);
+			isa.execute(cpu,isa._parse('je 8,9,0x10').mcode);
 			cpu.r[0].should.equal(0x10);
-			isa.execute(cpu,isa.parse('seti 0,0x00'));
-			isa.execute(cpu,isa.parse('je 0,8,0x10'));
+			isa.execute(cpu,isa._parse('seti 0,0x00').mcode);
+			isa.execute(cpu,isa._parse('je 0,8,0x10').mcode);
 			cpu.r[0].should.equal(0x00);
 		});
 		
 		it('should execute the ji instruction',function() {
-			isa.execute(cpu,isa.parse('seti 0,0x00'));
-			isa.execute(cpu,isa.parse('ji 1'));
+			isa.execute(cpu,isa._parse('seti 0,0x00').mcode);
+			isa.execute(cpu,isa._parse('ji 1').mcode);
 			cpu.r[0].should.equal(1);
 		});
 	});
@@ -235,7 +347,7 @@ describe('CPU',function(){
 			var cpu = new CPU();
 			cpu.r[0] = 20;
 
-			var mcode = cpu.isa.parse('seti 3,0x20');
+			var mcode = cpu.isa._parse('seti 3,0x20').mcode;
 			cpu.load([mcode],1000);
 			cpu.r[0].should.equal(0);
 			cpu.m.length.should.equal(1);
@@ -270,10 +382,10 @@ describe('CPU',function(){
 		it('should execute the current instruction and update the pc(register 0) as required ',function() {
 			var cpu = new CPU();
 			var p = [
-				cpu.isa.parse('seti 3,0x20'),
-				cpu.isa.parse('seti 4,0x10'),
-				cpu.isa.parse('and 3,3,4'),
-				cpu.isa.parse('ji 2'),
+				cpu.isa._parse('seti 3,0x20').mcode,
+				cpu.isa._parse('seti 4,0x10').mcode,
+				cpu.isa._parse('and 3,3,4').mcode,
+				cpu.isa._parse('ji 2').mcode,
 			];
 			
 			cpu.load(p);
@@ -308,11 +420,11 @@ describe('CPU',function(){
 
 			
 			var p = [
-				cpu.isa.parse('seti 2,0x09'),
-				cpu.isa.parse('seti 3,0x05'),
-				cpu.isa.parse('call 2,3,0x00'),
-				cpu.isa.parse('xor 2,2,2'),
-				cpu.isa.parse('ji 3'),
+				cpu.isa._parse('seti 2,0x09'),
+				cpu.isa._parse('seti 3,0x05'),
+				cpu.isa._parse('call 2,3,0x00'),
+				cpu.isa._parse('xor 2,2,2'),
+				cpu.isa._parse('ji 3'),
 				0x01
 			];
 			

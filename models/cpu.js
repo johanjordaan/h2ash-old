@@ -42,33 +42,58 @@ var ISA = function() {
 		this.instructions_by_name[value.name] = key;	
 	},this);
 }
-// Str format is o p1,p2,p3,p4
-ISA.prototype.parse = function(str) {
+// Str format is o p1,p2,p3,p4 -
+// If the instruction is not found then a zero is emited
+// Returns a structure { ok:<true/false> error:, mcode:} on any error a zero is emitted
+ISA.prototype._parse = function(str) {
 	var tokens = str.split(/[\s,]+/);
 	var opcode = this.instructions_by_name[tokens[0]];
 	var ret_val = Number(opcode)<<((this.instruction_length-this.opcode_length));
 	var i = this.instructions[opcode];
+	if(_.isUndefined(i)) return {ok:false,msg:'Unknown instruction ['+tokens[0]+']',mcode:0};
 	if(i.type=='RRR') {
+		if(tokens.length<4) return {ok:false,msg:'Insufficient parameters for instruction ['+tokens[0]+']',mcode:0};
 		ret_val |= Number(tokens[1]&0xF)<<((this.instruction_length-this.opcode_length-this.register_length));
 		ret_val |= Number(tokens[2]&0xF)<<((this.instruction_length-this.opcode_length-2*this.register_length));
 		ret_val |= Number(tokens[3]&0xF)<<((this.instruction_length-this.opcode_length-3*this.register_length));
 	} else 	if(i.type=='RR') {
+		if(tokens.length<3) return {ok:false,msg:'Insufficient parameters for instruction ['+tokens[0]+']',mcode:0};
 		ret_val |= Number(tokens[1]&0xF)<<((this.instruction_length-this.opcode_length-this.register_length));
 		ret_val |= Number(tokens[2]&0xF)<<((this.instruction_length-this.opcode_length-2*this.register_length));
 	} else 	if(i.type=='RRI') {
+		if(tokens.length<4) return {ok:false,msg:'Insufficient parameters for instruction ['+tokens[0]+']',mcode:0};
 		ret_val |= Number(tokens[1]&0xF)<<((this.instruction_length-this.opcode_length-this.register_length));
 		ret_val |= Number(tokens[2]&0xF)<<((this.instruction_length-this.opcode_length-2*this.register_length));
 		ret_val |= Number(tokens[3])
 	}else if(i.type=='RI') {
+		if(tokens.length<3) return {ok:false,msg:'Insufficient parameters for instruction ['+tokens[0]+']',mcode:0};
 		ret_val |= Number(tokens[1]&0xF)<<((this.instruction_length-this.opcode_length-this.register_length));
 		ret_val |= Number(tokens[2])
 	} else if(i.type=='R') {
+		if(tokens.length<2) return {ok:false,msg:'Insufficient parameters for instruction ['+tokens[0]+']',mcode:0};
 		ret_val |= Number(tokens[1]&0xF)<<((this.instruction_length-this.opcode_length-this.register_length));
 	}else if(i.type=='I') {
+		if(tokens.length<2) return {ok:false,msg:'Insufficient parameters for instruction ['+tokens[0]+']',mcode:0};
 		ret_val |= Number(tokens[1])
 	}
-	return ret_val;
+	return {ok:true,msg:'',mcode:ret_val};
 }
+ISA.prototype.parse = function(str) {
+	var that = this;
+	var lines = str.split(/[\n\r]+/);
+	var mcodes = [];
+	var errors = [];
+	
+	_.each(lines,function(line,line_no){
+		var result = that._parse(line);
+		if(!result.ok) errors.push('['+line_no+'] '+result.msg);
+		mcodes.push(result.mcode);
+	});
+	
+	return {ok:errors.length==0,errors:errors,mcodes:mcodes};
+}
+
+
 ISA.prototype.format_instruction = function(instruction) {
 	var str = instruction.toString(2);
 	var padding_delta = 32-str.length;

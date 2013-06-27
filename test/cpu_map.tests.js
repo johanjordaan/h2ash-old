@@ -23,7 +23,7 @@ describe('cpu_map',function(){
 	it('should save and load cpus',function(done) {
 		var cpu = new CPU();
 		
-		cpu.load([cpu.isa.parse('seti 1,0x33'),cpu.isa.parse('seti 2,0x10'),cpu.isa.parse('seti 3,0x11')]);
+		cpu.load(cpu.isa.parse('seti 1,0x33\nseti 2,0x10\nseti 3,0x11').mcodes);
 		cpu.step();
 		cpu.step();
 		cpu.r.length.should.equal(16);
