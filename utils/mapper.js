@@ -1,10 +1,12 @@
-var _ = require('underscore');
-var redis = require('redis');
-var printf = require('../utils/printf.js').printf;
-var construct = require('../utils/constructor.js').construct;
-var Junction = require('../utils/junction.js').Junction;
-var util = require('util');
-
+if(typeof(require) == 'undefined') {
+} else {
+	_ = require('underscore');
+	redis = require('redis');
+	printf = require('../utils/printf.js').printf;
+	construct = require('../utils/constructor.js').construct;
+	Junction = require('../utils/junction.js').Junction;
+	util = require('util');
+}
 // Redis wrappers
 //
 var incr = function(client,name,callback) {
@@ -328,5 +330,8 @@ if(typeof module != 'undefined') {
 	module.exports.update = _update;
 	module.exports.create = _create;
 } else {
-    alert('mapper.js cannot be used on the client side');
+    mapper = {
+		update : _update,
+		create : _create
+	}
 }

@@ -34,8 +34,8 @@ var ShipFX = function(scene,ship,parms) {
 ShipFX.prototype.render = function(timestamp) {
 	var radius = Math.floor(this.radius*this.scene.camera.magnification);
 	if(radius<2) radius = 2;
-	var x = this.ship.p_x*this.scene.camera.magnification;
-	var y = this.ship.p_y*this.scene.camera.magnification;
+	var x = this.ship.mechanical_object.x*this.scene.camera.magnification;
+	var y = this.ship.mechanical_object.y*this.scene.camera.magnification;
 	
 	this.scene.screen.context.save();
 	this.scene.screen.context.strokeStyle = this.color;

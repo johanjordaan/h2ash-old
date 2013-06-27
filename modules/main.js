@@ -8,12 +8,6 @@ var sync = function(f) {
 	$.getJSON('/main/objects',function(data){
 		my_ship_id = data.my_ship_id; 
 		_.each(data.ships,function(ship) {
-			if(ship.id == my_ship_id) {
-				my_ship = ship;
-				my_ship.v = 20;
-				my_ship.t_x = 0;
-				my_ship.t_y = 0;
-			}
 			ship.last_update = getTimestamp();		// Reset the timestamp to FE rather than BE
 			
 			var fx = _.find(ship_fxs,function(fx){
@@ -21,9 +15,9 @@ var sync = function(f) {
 			});	
 			
 			if(_.isUndefined(fx))
-				ship_fxs.push(new ShipFX(scene,ship,{color:'red',label:'starship x'}));
+				ship_fxs.push(new ShipFX(scene,new Ship(ship_map,ship),{color:'red',label:'starship x'}));
 			else
-				fx.ship = ship;
+				fx.ship.set(ship);
 		});
 		
 		// TODO : Remove ships that has not been passed back
@@ -51,29 +45,31 @@ var render = function(time) {
 }
 
 var update_objects = function(time) {
-	var v = my_ship.v;
+	/*var v = my_ship.ship.v;
 	if(speed_up) {
 		if(v<40) v++;
 	} else if(slow_down) {
 		if(v>0) v--;
-	}
+	}*/
 	
-	if(v != my_ship.v) {
+	/*if(v != my_ship.v) {
 		set_velocity(my_ship,v,getTimestamp());
 		$.post('/main/object/'+my_ship.id+'/set_velocity',{p:{v:v}},function(data,textStatus,jqXHR){  
 		});
-	}
+	}*/
+	
 	
 	
 	_.each(ship_fxs,function(fx){
+		fx.ship.update(time);
 		update(fx.ship,time);
 	});
-	if(!_.isUndefined(my_ship)){
+	/*if(!_.isUndefined(my_ship)){
 		$('#heading').html(rad2deg(my_ship.heading).toFixed(1));
 		$('#velocity').html(my_ship.v.toFixed(1));
 		$('#world_x').html(camera.center_x.toFixed(1));
 		$('#world_y').html(camera.center_y.toFixed(1));
-	}
+	}*/
 	
 }
 
@@ -109,10 +105,10 @@ $(function() {
 	//var ship = new ShipFX(scene,{x:149600000,y:-8000,color:'white',radius:'2',label:'transport nx-001'})
 	
 	sync(function() {
-		var av = 20;
-		set_angular_velocity(my_ship,av,getTimestamp());
-		$.post('/main/object/'+my_ship.id+'/set_angular_velocity',{p:{av:av}},function(data,textStatus,jqXHR){  
-		});
+		//var av = 20;
+		//set_angular_velocity(my_ship,av,getTimestamp());
+		//$.post('/main/object/'+my_ship.id+'/set_angular_velocity',{p:{av:av}},function(data,textStatus,jqXHR){  
+		//});
 	});
 	setInterval(function() { sync(); },5000)
 	sync();
