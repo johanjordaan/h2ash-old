@@ -16,6 +16,13 @@ MechanicalObject.prototype.set = function(source) {
 	mapper.update(this.map,this,source);
 };
 
+MechanicalObject.prototype.set_target =function(x,y,timestamp) {
+	this.update(timestamp);
+	this.t_x = x;
+	this.t_y = y;
+}
+
+
 MechanicalObject.prototype._update_target_variables = function(){
 	if(this.x == this.t_x && this.y == this.t_y) return;
 	var pc = trig.c2p(this.t_x-this.x,this.t_y-this.y);

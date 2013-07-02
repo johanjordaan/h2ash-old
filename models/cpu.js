@@ -34,7 +34,7 @@ var ISA = function() {
 		
 		22 : {type:'RRI',name:'je'  ,action:function(cpu,r0,r1,imm){ if(cpu.r[r0] == cpu.r[r1]) cpu.r[0] = imm; } },
 		23 : {type:'I'  ,name:'ji'  ,action:function(cpu,imm)      { cpu.r[0] = imm; } },
-		24 : {type:'RRI',name:'call',action:function(cpu,r0,r1,imm,timestamp){ cpu.pause(timestamp); cpu.modules[cpu.r[r0]].call(cpu,cpu.r[r1]+imm,function(timestamp){ cpu.un_pause(timestamp);});  } },
+		24 : {type:'R'	,name:'call',action:function(cpu,r0)	   { cpu.call_module(cpu.r[r0]); } },
 		
 	};
 	this.instructions_by_name = {};
@@ -151,10 +151,6 @@ CPU.prototype.set = function(source) {
 	this.last_update = time.get_timestamp();
 };
 
-CPU.prototype.add_module = function(num,module) {
-	this.modules[num] = module;
-}
-
 CPU.prototype._clear_registers = function() {
 	this.r = [];
 	for(var i=0;i<16;i++) {
@@ -173,12 +169,20 @@ CPU.prototype.step = function(timestamp) {
 	if(ip>=this.m.length) return;
 
 	var c = this.m[ip];
-	this.isa.execute(this,c,timestamp);
+	this.isa.execute(this,c);
 	if(ip==this.r[0])
 		this.r[0]++;
 	this.last_update = timestamp;	
 		
 }
+
+CPU.prototype.call_module = function(module_id) {
+	if(!_.isUndefined(this.ship)) {
+		this.pause();
+		this.ship.call_module(this,module_id,timestamp,function(timestamp){this.un_pause(timestamp)});	
+	}
+}
+
 
 CPU.prototype.pause = function(timestamp) {
 	this.paused = true;

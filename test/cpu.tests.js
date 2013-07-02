@@ -123,9 +123,9 @@ describe('ISA',function(){
 			isa.format_instruction(mcode.mcode).should.equal('0101 1100 0000 0000 - 0000 0000 0011 0000')
 		});
 		it('should parse the call instruction',function() {
-			var mcode = isa._parse('call 1,2,0x30');
+			var mcode = isa._parse('call 1');
 			mcode.ok.should.equal(true);
-			isa.format_instruction(mcode.mcode).should.equal('0110 0000 0100 1000 - 0000 0000 0011 0000')
+			isa.format_instruction(mcode.mcode).should.equal('0110 0000 0100 0000 - 0000 0000 0000 0000')
 		});
 		
 		// Negative testing
@@ -409,20 +409,19 @@ describe('CPU',function(){
 		
 		it('should pause when when a call has not returned yet',function() {
 			var cpu = new CPU();
-			cpu.add_module(0x09,{
-				call:function(cpu,offset,callback) {  
+			cpu.ship = {
+				call_module : function(cpu,module_id,timestamp,callback) {
+					module_id.should.equal(0x05);
 					cpu.paused.should.equal(true);
 					callback(4000);
 					cpu.paused.should.equal(false);
 					cpu.last_update.should.equal(4000);
 				}
-			});
+			}
 
-			
 			var p = [
-				cpu.isa._parse('seti 2,0x09'),
 				cpu.isa._parse('seti 3,0x05'),
-				cpu.isa._parse('call 2,3,0x00'),
+				cpu.isa._parse('call 3'),
 				cpu.isa._parse('xor 2,2,2'),
 				cpu.isa._parse('ji 3'),
 				0x01
@@ -435,7 +434,7 @@ describe('CPU',function(){
 			cpu.paused.should.equal(false);
 			cpu.r[0].should.equal(3);
 			cpu.last_update.should.equal(3000);
-			cpu.m.length.should.equal(6);
+			cpu.m.length.should.equal(5);
 			
 		});
 		

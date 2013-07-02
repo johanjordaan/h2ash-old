@@ -9,6 +9,7 @@ var ship_module_map = {
 		base_latency 	: { type:'Simple', default_value:0 },
 		activated		: { type:'Simple', default_value:false,conversion:function(val){ return val=='true'} },
 		completion_time	: { type:'Simple', default_value:0/*, conversion:time.get_timestamp*/ },
+		module_id	 	: { type:'Simple', default_value:0 },
 	},
 	default_collection	: 'ShipModules',
 	cls : ShipModule

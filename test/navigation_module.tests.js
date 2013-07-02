@@ -5,8 +5,11 @@ var expect = require('chai').expect;
 
 var NavigationModuleType = require('../models/navigation_module_type.js').NavigationModuleType;
 var NavigationModule = require('../models/navigation_module.js').NavigationModule;
+var Ship = require('../models/ship.js').Ship;
 var navigation_module_map = require('../maps/navigation_module_map.js').navigation_module_map;
 var navigation_module_type_map = require('../maps/navigation_module_type_map.js').navigation_module_type_map;
+var ship_map = require('../maps/ship_map.js').ship_map;
+
 
 
 describe('NavigationModuleType',function(){
@@ -46,14 +49,16 @@ describe('NavigationModule',function(){
 			
 			var nm_source = { activated:false,type:type }
 			var nm = new NavigationModule(navigation_module_map,nm_source)
+			var ship = new Ship(ship_map,{});
+			ship.add_module(nm);
 			
 			nm.set_target(20,300000);
-			nm.target_x.should.equal(20);
-			nm.target_y.should.equal(300000);
+			ship.mechanical_object.t_x.should.equal(20);	
+			ship.mechanical_object.t_y.should.equal(300000);
 
 			nm.set_target(-222200,80);
-			nm.target_x.should.equal(-222200);
-			nm.target_y.should.equal(80);
+			ship.mechanical_object.t_x.should.equal(-222200);	
+			ship.mechanical_object.t_y.should.equal(80);
 			
 		});
 	});

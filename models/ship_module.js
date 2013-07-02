@@ -18,7 +18,7 @@ ShipModule.prototype.set = function(source) {
 // When a module is activated it gets passed the CPU and it can basically do with it what it wants but
 // it is assumed that it would only use its memory and read the relevant registes
 
-ShipModule.prototype.call = function(cpu,callback) {
+ShipModule.prototype.call = function(cpu,timestamp,callback) {
 	if(this.activated) return;		// Might need to return an error
 	
 	this.activated = true;		
@@ -32,17 +32,16 @@ ShipModule.prototype.call = function(cpu,callback) {
 	else
 		latency += command*=latency;
 	
-	this.completion_time = time.get_timestamp() + latency ;
-		
+	this.completion_time = timestamp + latency ;
 };
 
 ShipModule.prototype.update = function(timestamp) {
 	if(!this.activated) return;
 	if(timestamp>this.completion_time) {
 		if(!_.isUndefined(this.current_command))
-			this.current_command.action(this.currentr_cpu.r);
+			this.current_command.action(this.currentr_cpu.r,timestamp);
 		
-		this.current_callback();	
+		this.current_callback(timestamp);	
 		this.activated = false;
 	} 
 }
