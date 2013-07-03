@@ -55,7 +55,7 @@ Ship.prototype.get_position = function() {
 }
 
 Ship.prototype.update = function(timestamp) {
-	_.each(this.cpus,function(module){
+	_.each(this.cpus,function(cpu){
 		cpu.step(timestamp);
 	});	
 	

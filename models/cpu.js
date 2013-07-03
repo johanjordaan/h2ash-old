@@ -35,7 +35,8 @@ var ISA = function() {
 		22 : {type:'RRI',name:'je'  ,action:function(cpu,r0,r1,imm){ if(cpu.r[r0] == cpu.r[r1]) cpu.r[0] = imm; } },
 		23 : {type:'I'  ,name:'ji'  ,action:function(cpu,imm)      { cpu.r[0] = imm; } },
 		24 : {type:'R'	,name:'call',action:function(cpu,r0)	   { cpu.call_module(cpu.r[r0]); } },
-		
+
+		25 : {type:'RRI',name:'jl'  ,action:function(cpu,r0,r1,imm){ if(cpu.r[r0] < cpu.r[r1]) cpu.r[0] = imm; } },
 	};
 	this.instructions_by_name = {};
 	_.each(this.instructions,function(value,key){

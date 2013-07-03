@@ -59,17 +59,15 @@ block content
 				p Hallo World!
 				
 			
-	//-a.btn.btn-primary(href="#create_dialogue",role="button",data-toggle="modal") Create
+	a.btn.btn-primary(href="#code_window",role="button",data-toggle="modal") Code
 			
-	div#create_dialogue.modal.hide.fade(role='dialog',tabindex='-1',aria-hidden='true',aria-labelledby='myModalLabel')
+	div#code_window.modal.hide.fade(role='dialog',tabindex='-1',aria-hidden='true')
 		div.modal-header
 			button.close(type='button',data-dismiss='modal',aria-hidden='true') x
-			h3 Modal header
+			h3 Code
 		div.modal-body 
 			form.form-inline
-				input#x.input-small(type='text',placeholder='x')
-				input#y.input-small(type='text',placeholder='y')
-				input#v.input-small(type='text',placeholder='v')
+				textarea#x.input-block-level(placeholder='',width="100%")
 		div.modal-footer
 			button.btn(data-dismiss='modal',aria-hidden='true') Close
-			button#create_btn.btn.btn-primary(data-dismiss='modal',aria-hidden='true') Create
+			button#update_code_btn.btn.btn-primary(data-dismiss='modal',aria-hidden='true') Update

@@ -390,10 +390,14 @@ describe('Mapper', function() {
 			var b = mapper.create(bank_map);
 			var a = mapper.create(account_map,{bank:b});
 			p.accounts.push(a);	
+			p.lotto_numbers.push(12);
+			p.lotto_numbers.push(18);
+
 
 			p.name = 'Johan';
 			p.accounts.length.should.equal(1);
-			
+			p.lotto_numbers.length.should.equal(2);
+
 			mapper.save(person_map,p,function(saved_person){
 				saved_person.id.should.equal(1);
 				mapper.load(person_map,1,function(loaded_person){
@@ -402,6 +406,7 @@ describe('Mapper', function() {
 					loaded_person.accounts.length.should.equal(1);
 					loaded_person.accounts[0]._name.should.equal('Account');
 					loaded_person.accounts[0].bank._name.should.equal('Bank');
+					loaded_person.lotto_numbers.length.should.equal(2);
 					done();
 				});
 			});

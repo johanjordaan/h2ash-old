@@ -13,9 +13,8 @@ var mapper = new Mapper();
 var update = function() {
 	mapper.load_all(ship_map,function(ships){
 		_.each(ships,function(db_ship){
-			var ship = new Ship(ship_map,db_ship);
-			ship.update(time.get_timestamp());
-			mapper.save(ship_map,ship,function(obj){ });
+			db_ship.update(time.get_timestamp());
+			mapper.save(ship_map,db_ship,function(obj){ });
 		});
 		//process.nextTick(update);
 		setTimeout(update,100);

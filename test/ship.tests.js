@@ -34,5 +34,4 @@ describe('Ship',function(){
 			
 		});
 	});
-	
 });

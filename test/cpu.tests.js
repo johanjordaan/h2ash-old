@@ -127,6 +127,11 @@ describe('ISA',function(){
 			mcode.ok.should.equal(true);
 			isa.format_instruction(mcode.mcode).should.equal('0110 0000 0100 0000 - 0000 0000 0000 0000')
 		});
+		it('should parse the jl instruction',function() {
+			var mcode = isa._parse('jl 3,2,0x30');
+			mcode.ok.should.equal(true);
+			isa.format_instruction(mcode.mcode).should.equal('0110 0100 1100 1000 - 0000 0000 0011 0000')
+		});
 		
 		// Negative testing
 		//
@@ -324,6 +329,19 @@ describe('ISA',function(){
 			isa.execute(cpu,isa._parse('ji 1').mcode);
 			cpu.r[0].should.equal(1);
 		});
+
+		it('should execute the jl instruction',function() {
+			isa.execute(cpu,isa._parse('seti 0,0x00').mcode);
+			isa.execute(cpu,isa._parse('seti 9,0x5').mcode);
+			isa.execute(cpu,isa._parse('seti 8,0x02').mcode);
+			isa.execute(cpu,isa._parse('jl 9,8,0x10').mcode);
+			cpu.r[0].should.equal(0x00);
+			isa.execute(cpu,isa._parse('jl 8,9,0x10').mcode);
+			cpu.r[0].should.equal(0x10);
+			
+		});
+
+
 	});
 });
 
